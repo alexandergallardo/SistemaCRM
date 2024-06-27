@@ -1,0 +1,31 @@
+<mat-toolbar color="primary">
+  <mat-toolbar-row>
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+
+    <ng-container *ngIf="lead">
+      Información del lead {{ lead.name }}
+    </ng-container>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<div class="barra-estado" *ngIf="lead">
+  <ng-container *ngFor="let etapa of etapasKeys">
+    <div 
+      class="etapa" 
+      [class.completada]="etapaCompleta(lead.leadStatus, etapa)"
+      [class.actual]="etapaActual(lead.leadStatus, etapa)"
+      [class.seleccionada]="etapaSeleccionada(etapa)"
+      (click)="seleccionarEtapa(etapa)"
+    >
+      {{ obtenerEtapa(etapa) }}
+      <ng-container *ngIf="etapaCompleta(lead.leadStatus, etapa)">
+        ✔️
+      </ng-container>
+    </div>
+  </ng-container>
+  <button mat-raised-button color="primary" class="boton-estado" (click)="handleLeadStatusAction()">{{ getActionButtonText() }}</button>
+
+</div>
+

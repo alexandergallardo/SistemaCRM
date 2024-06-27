@@ -1,0 +1,119 @@
+<mat-card class="card-emergente">
+  <mat-toolbar color="primary">
+    Nuevo lead
+    <span class="espacio"> </span>
+    <button mat-icon-button type="button" (click)="cerrarVentana()">
+      <mat-icon> close </mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <form [formGroup]="leadForm" autocomplete="off">
+    <div class="spinner-container-emergente" *ngIf="cargando$ | async">
+      <mat-spinner></mat-spinner>
+    </div>
+
+    <mat-card-content>
+      <mat-card-title class="texto_primary"> Datos generales del lead </mat-card-title>
+      <mat-grid-list cols="3" rowHeight="70px">
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Nombre </mat-label>
+            <input matInput formControlName="name" />
+            <mat-error *ngIf="leadForm.get('name')?.invalid">
+              Debe tener el formato: APELIDO APELLIDO, NOMBRE(S)
+            </mat-error>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Cargo </mat-label>
+            <input matInput formControlName="position" />
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Correo electrónico </mat-label>
+            <input type="email" matInput formControlName="email" />
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Celular </mat-label>
+            <input matInput formControlName="mobile" placeholder="994-212-883" />
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <mat-card-title class="texto_primary"> Información adicional </mat-card-title>
+      <mat-grid-list cols="3" rowHeight="70px">
+        <mat-grid-tile colspan="3">
+          <mat-form-field class="columnas-3">
+            <mat-label> Cliente </mat-label>
+            <input
+              matInput
+              [matAutocomplete]="AutoCliente"
+              formControlName="accountName"
+              [readonly]="leadForm.value.accountId ? true : false" />
+            <mat-icon color="primary" matSuffix (click)="removerCliente()" *ngIf="leadForm.value.accountId">
+              remove_circle
+            </mat-icon>
+            <mat-autocomplete #AutoCliente="matAutocomplete" (optionSelected)="clienteSeleccionado($event.option.value)">
+              <mat-option *ngFor="let account of accounts" [value]="account">
+                {{ account.companyName }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Estado del lead </mat-label>
+            <mat-select formControlName="leadStatus">
+              <mat-option [value]="'NUEVO'"> NUEVO </mat-option>
+              <mat-option [value]="'CONTACTADO'"> CONTACTADO </mat-option>
+              <mat-option [value]="'TRABAJANDO'"> TRABAJANDO </mat-option>
+              <mat-option [value]="'CALIFICADO'"> CALIFICADO </mat-option>
+              <mat-option [value]="'NO CALIFICADO'"> NO CALIFICADO </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Valoración </mat-label>
+            <mat-select formControlName="leadRating">
+              <mat-option [value]="'FRIO'"> FRIO </mat-option>
+              <mat-option [value]="'TIBIO'"> TIBIO </mat-option>
+              <mat-option [value]="'CALIENTE'"> CALIENTE </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Fuente del lead </mat-label>
+            <mat-select formControlName="leadSource">
+              <mat-option [value]="'ANUNCIO'"> ANUNCIO </mat-option>
+              <mat-option [value]="'RECOMENDACION'"> RECOMENDACION </mat-option>
+              <mat-option [value]="'REFERENCIA INTERNA'"> REFERENCIA INTERNA </mat-option>
+              <mat-option [value]="'REFERENCIA EXTERNA'"> REFERENCIA EXTERNA </mat-option>
+              <mat-option [value]="'OTRO'"> OTRO </mat-option>
+              <mat-option [value]="'SOCIAL'"> SOCIAL </mat-option>
+              <mat-option [value]="'FERIA'"> FERIA </mat-option>
+              <mat-option [value]="'WEB'"> WEB </mat-option>
+              <mat-option [value]="'BOCA A BOCA'"> BOCA A BOCA </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </mat-card-content>
+  </form>
+
+  <mat-card-actions>
+    <button
+      mat-raised-button
+      type="button"
+      color="primary"
+      [disabled]="leadForm.invalid || (cargando$ | async)"
+      (click)="guardar()"
+      >
+      Guardar
+    </button>
+  </mat-card-actions>
+</mat-card>

@@ -1,0 +1,70 @@
+<div class="mat-elevation-z8">
+
+  <div class="prl15 pt10">
+    <h3 class="mat-h3">Listado de servicios</h3>
+
+    <div class="header-container">
+      <div class="search-bar">
+        <mat-form-field class="example-full-width" appearance="fill">
+          <mat-label>Nombre</mat-label>
+          <input matInput [formControl]="formControl" />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="action-buttons">
+        <button mat-fab color="primary" matTooltip="Descargar reporte">
+          <mat-icon>cloud_download</mat-icon>
+        </button>
+
+        <button mat-fab color="primary" (click)="agregar()" matTooltip="Agregar sector">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="spinner-container" *ngIf="dataSource.cargando$ | async">
+    <mat-spinner></mat-spinner>
+  </div>
+  <div class="responsive-table">
+    <table mat-table matTableExporter [dataSource]="dataSource"
+      matSort>
+
+      <ng-container matColumnDef="code">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Código </th>
+        <td mat-cell *matCellDef="let element"> {{element.code}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre </th>
+        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="measurement_unit">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Unidad de medida </th>
+        <td mat-cell *matCellDef="let element"> {{element.measurementUnit}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="options">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button color="primary" matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="primary" (click)="eliminar(row)" matTooltip="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+  </div>
+
+  <mat-paginator [pageSizeOptions]="[20, 50, 100]" showFirstLastButtons></mat-paginator>
+
+</div>

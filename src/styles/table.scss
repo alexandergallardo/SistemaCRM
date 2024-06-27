@@ -1,0 +1,76 @@
+.mat-elevation-z8 {
+  padding: 15px;
+}
+
+.pr15 {
+  padding-right: 15px;
+}
+
+.pt10 {
+  padding-top: 10px;
+}
+
+.mat-h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.form-fields {
+  width: 100%;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.search-icon {
+  font-size: 20px;
+}
+
+.search-bar {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.action-buttons {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.checkbox-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.responsive-table {
+  margin-top: 15px;
+}
+
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.mat-mdc-form-field {
+  margin-right: 20px;
+}
+
+.mat-mdc-header-row, mdc-data-table__header-row, cdk-header-row ng-star-inserted {
+  background-color: #3f51b5 !important;
+  color: #fff !important;
+}

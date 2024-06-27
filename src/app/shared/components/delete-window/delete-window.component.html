@@ -1,0 +1,20 @@
+<mat-card class="card-emergente">
+  <mat-toolbar color="warn">
+    Confirmar eliminado
+    <span class="espacio"> </span>
+    <button mat-icon-button type="button" (click)="CerrarVentana()">
+      <mat-icon> close </mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <mat-card-header>
+    <mat-card-title>¿Está seguro que desea eliminar {{ data.object }}?</mat-card-title>
+    <mat-card-subtitle>
+      {{ data.value }}
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-actions>
+    <button type="submit" mat-raised-button color="warn" (click)="confirmarEliminar()">Aceptar</button>
+  </mat-card-actions>
+</mat-card>

@@ -1,0 +1,29 @@
+<main class="cabecera" cdkDropListGroup>
+  <div class="listax" *ngFor="let lista of listas">
+    <h3 class="listax__title">
+      <strong>{{ lista.name }} ({{ (oportunidadesMap.get(lista.id) || []).length }})</strong>
+    </h3>
+    <div class="list__total">
+      {{ calcularTotal(lista.id) | currency: 'PEN' : 'S/ ' : '1.0-0' }}
+    </div>
+  </div>
+</main>
+<main class="board" cdkDropListGroup>
+  <div class="board__list">
+    <div
+      class="list"
+      cdkDropList
+      *ngFor="let lista of listas; let i = index"
+      [id]="i + 1 + ''"
+      [cdkDropListData]="oportunidadesMap.get(lista.id) || []"
+      (cdkDropListDropped)="drop($event)">
+      <div class="list__tasks">
+        <app-opportunity-card
+        *ngFor="let oportunidad of oportunidadesMap.get(lista.id) || []"
+        [oportunidad]="oportunidad"
+            cdkDrag
+            ></app-opportunity-card>
+      </div>
+    </div>
+  </div>
+</main>

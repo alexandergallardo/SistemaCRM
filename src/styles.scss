@@ -1,1 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
+@use "@angular/material" as mat;
+@include mat.core();
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.derecha{
+    float: right;
+    margin-right: 1% !important;
+    z-index: 1;
+    transform: translateY(-50%) !important;
+}
+
+.derecha-tab{
+    float: right;
+    margin-right: 2.5% !important;
+    z-index: 1;
+}
+
+@import './styles/table.scss';
+@import './styles/spinner.scss';
+@import './styles/form.scss';
+@import './styles/colors.scss';

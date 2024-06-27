@@ -1,0 +1,139 @@
+<mat-card class="card-emergente">
+  <mat-toolbar color="primary">
+    Nuevo contacto
+    <span class="espacio"> </span>
+    <button mat-icon-button type="button" (click)="cerrarVentana()">
+      <mat-icon> close </mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <form [formGroup]="contactForm" autocomplete="off">
+    <div class="spinner-container-emergente" *ngIf="cargando$ | async">
+      <mat-spinner></mat-spinner>
+    </div>
+
+    <mat-card-content>
+      <mat-card-title class="texto_primary"> Datos generales del contacto </mat-card-title>
+      <mat-grid-list cols="3" rowHeight="70px">
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Nombre </mat-label>
+            <input matInput formControlName="name" />
+            <mat-error *ngIf="contactForm.get('name')?.invalid">
+              Debe tener el formato: APELIDO APELLIDO, NOMBRE(S)
+            </mat-error>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Cargo </mat-label>
+            <input matInput formControlName="position" />
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <mat-grid-list cols="4" rowHeight="70px">
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Área </mat-label>
+            <input matInput formControlName="area" />
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Gerencia </mat-label>
+            <input matInput formControlName="gerencia" />
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Tipo de decisor </mat-label>
+            <mat-select formControlName="tipoDecisor">
+              <mat-option [value]="'ECONOMICO'"> ECONOMICO </mat-option>
+              <mat-option [value]="'GESTOR'"> GESTOR </mat-option>
+              <mat-option [value]="'SPONSOR'"> SPONSOR </mat-option>
+              <mat-option [value]="'TECNICO'"> TECNICO </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Cliente </mat-label>
+            <input
+              matInput
+              [matAutocomplete]="AutoCliente"
+              formControlName="accountName"
+              [readonly]="contactForm.value.accountId ? true : false" />
+            <mat-icon color="primary" matSuffix (click)="removerCliente()" *ngIf="contactForm.value.accountId">
+              remove_circle
+            </mat-icon>
+            <mat-autocomplete #AutoCliente="matAutocomplete" (optionSelected)="clienteSeleccionado($event.option.value)">
+              <mat-option *ngFor="let account of accounts" [value]="account">
+                {{ account.companyName }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+
+      <mat-card-title class="texto_primary"> Información de contacto </mat-card-title>
+      <mat-grid-list cols="4" rowHeight="70px">
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Celular </mat-label>
+            <input matInput formControlName="mobile" placeholder="994-212-883" />
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Correo electrónico </mat-label>
+            <input type="email" matInput formControlName="email" />
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <mat-grid-list cols="3" rowHeight="70px">
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> LinkedIn </mat-label>
+            <input matInput formControlName="linkedin" />
+            <mat-icon matSuffix svgIcon="linkedin"></mat-icon>
+            <mat-error *ngIf="contactForm.get('linkedin')?.invalid">
+             Formato: "https://"
+            </mat-error>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Facebook </mat-label>
+            <input matInput formControlName="facebook" />
+            <mat-icon matSuffix svgIcon="face"></mat-icon>
+            <mat-error *ngIf="contactForm.get('facebook')?.invalid">
+             Formato: "https://"
+            </mat-error>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Instagram </mat-label>
+            <input matInput formControlName="instagram" />
+            <mat-icon matSuffix svgIcon="instagram"></mat-icon>
+            <mat-error *ngIf="contactForm.get('instagram')?.invalid">
+             Formato: "https://"
+            </mat-error>
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </mat-card-content>
+  </form>
+
+  <mat-card-actions>
+    <button
+      mat-raised-button
+      type="button"
+      color="primary"
+      [disabled]="contactForm.invalid || (cargando$ | async)"
+      (click)="guardar()"
+      >
+      Guardar
+    </button>
+  </mat-card-actions>
+</mat-card>

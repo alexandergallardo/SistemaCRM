@@ -1,0 +1,92 @@
+.barra-estado {
+  display: flex;
+  justify-content: space-between;
+  margin: 30px;
+}
+
+.boton-estado {
+  margin-left: 15px;
+}
+
+.etapa {
+  position: relative;
+  width: calc(100% / 6 - 10px);
+  margin-right: 10px;
+  text-align: center;
+  line-height: 30px;
+  color: #202020;
+  align-content: center;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.etapa::before {
+  content: '';
+  position: absolute;
+  top: auto;
+  left: 0px;
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-left: 15px solid #fff;
+  z-index: 0;
+}
+
+.etapa::after {
+  content: '';
+  position: absolute;
+  top: auto;
+  right: -15px;
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-left: 15px solid #fff;
+  z-index: 1;
+}
+
+.etapa:first-child::before {
+  border-left-color: transparent;
+}
+
+.completada {
+  background-color: #43a047; /* Verde para etapa completada */
+  color: #fff;
+}
+
+.completada::before {
+  border-left-color: #ffffff;
+}
+
+.completada::after {
+  border-left-color: #43a047;
+}
+
+.seleccionada {
+  background-color: #2196f3; /* Azul para etapa seleccionada */
+  color: white;
+  border-color: #2196f3;
+}
+
+.seleccionada::before {
+  border-left-color: #2196f3;
+}
+
+.seleccionada::after {
+  border-left-color: #2196f3;
+}
+
+.actual {
+  background-color: white; /* Blanco para la etapa actual */
+  color: #2196f3;
+  border-color: #2196f3;
+}
+
+.actual::before {
+  border-left-color: white;
+}
+
+.actual::after {
+  border-left-color: #2196f3;
+}
