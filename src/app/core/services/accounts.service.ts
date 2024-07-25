@@ -26,7 +26,7 @@ export class AccountsService {
     .set('numeroPagina', numeroPagina.toString())
     .set('totalPagina', totalPagina.toString());
 
-    return this.httpClient.get<IRespuestaHttpEstandar<Account[]>>(`${environment.apiBaseUrl}/account`, { params }).pipe(
+    return this.httpClient.get<IRespuestaHttpEstandar<Account[]>>(`${environment.apiBaseUrl}/sales/account`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Account[]>) => {
         if (respuesta.status === 200) {
           return respuesta;
@@ -74,7 +74,7 @@ export class AccountsService {
       
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
 
-    return this.httpClient.post<IRespuestaHttpEstandar<Account>>(`${environment.apiBaseUrl}/account`, params, { headers: headers }).pipe(
+    return this.httpClient.post<IRespuestaHttpEstandar<Account>>(`${environment.apiBaseUrl}/sales/account`, params, { headers: headers }).pipe(
       map((resultado: IRespuestaHttpEstandar<Account>) => {
         if (resultado.status === 201 && resultado.data) {
           return resultado.data;
@@ -93,7 +93,7 @@ export class AccountsService {
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
 
     return this.httpClient
-      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/account/${accountId}`, { headers: headers })
+      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/sales/account/${accountId}`, { headers: headers })
       .pipe(
         map((resultado: IRespuestaHttpEstandar<number>) => {
           if (resultado.status === 200 && resultado.data) {

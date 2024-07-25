@@ -5,20 +5,8 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
-.derecha{
-    float: right;
-    margin-right: 1% !important;
-    z-index: 1;
-    transform: translateY(-50%) !important;
-}
-
-.derecha-tab{
-    float: right;
-    margin-right: 2.5% !important;
-    z-index: 1;
-}
-
 @import './styles/table.scss';
 @import './styles/spinner.scss';
 @import './styles/form.scss';
 @import './styles/colors.scss';
+@import './styles/buttons.scss';

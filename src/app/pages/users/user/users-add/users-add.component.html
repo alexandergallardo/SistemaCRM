@@ -1,0 +1,65 @@
+<mat-card class="card-emergente">
+  <mat-toolbar color="primary">
+    Nuevo usuario
+    <span class="espacio"> </span>
+    <button mat-icon-button type="button" (click)="cerrarVentana()">
+      <mat-icon> close </mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <form [formGroup]="userForm" autocomplete="off">
+    <div class="spinner-container-emergente" *ngIf="cargando$ | async">
+      <mat-spinner></mat-spinner>
+    </div>
+
+    <mat-card-content>
+      <mat-grid-list cols="2" rowHeight="70px">
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label>Rol</mat-label>
+            <mat-select formControlName="rolId">
+              <mat-option *ngFor="let rol of roles" [value]="rol.id">
+                {{ rol.name }}
+              </mat-option>
+            </mat-select>          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label>Documento</mat-label>
+            <input matInput formControlName="document"/>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="name"/>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label>Correo electrónico</mat-label>
+            <input matInput formControlName="email"/>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label>Contraseña</mat-label>
+            <input matInput formControlName="password"/>
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </mat-card-content>
+  </form>
+
+  <mat-card-actions>
+    <button
+      mat-raised-button
+      type="button"
+      color="primary"
+      [disabled]="userForm.invalid || (cargando$ | async)"
+      (click)="guardar()"
+      >
+      Guardar
+    </button>
+  </mat-card-actions>
+</mat-card>

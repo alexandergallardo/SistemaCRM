@@ -21,7 +21,7 @@ export class PersonService {
       .set('numeroPagina', numeroPagina.toString())
       .set('totalPagina', totalPagina.toString());
 
-    return this.httpClient.get<IRespuestaHttpEstandar<Contact[]>>(`${environment.apiBaseUrl}/person/contacts`, { params }).pipe(
+    return this.httpClient.get<IRespuestaHttpEstandar<Contact[]>>(`${environment.apiBaseUrl}/sales/person/contacts`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Contact[]>) => {
         if (respuesta.status === 200) {
           return respuesta;
@@ -46,7 +46,7 @@ export class PersonService {
       .set('numeroPagina', numeroPagina.toString())
       .set('totalPagina', totalPagina.toString());
 
-    return this.httpClient.get<IRespuestaHttpEstandar<Lead[]>>(`${environment.apiBaseUrl}/person/leads`, { params }).pipe(
+    return this.httpClient.get<IRespuestaHttpEstandar<Lead[]>>(`${environment.apiBaseUrl}/sales/person/leads`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Lead[]>) => {
         if (respuesta.status === 200) {
           return respuesta;
@@ -62,7 +62,7 @@ export class PersonService {
   }
 
   public getOneLead(id: number): Observable<IRespuestaHttpEstandar<Lead>> {
-    return this.httpClient.get<IRespuestaHttpEstandar<Lead>>(`${environment.apiBaseUrl}/person/leads/${id}`);
+    return this.httpClient.get<IRespuestaHttpEstandar<Lead>>(`${environment.apiBaseUrl}/sales/person/leads/${id}`);
   }
 
   public create(
@@ -90,7 +90,7 @@ export class PersonService {
 
     console.log('Params:', body); 
 
-    return this.httpClient.post<IRespuestaHttpEstandar<Person>>(`${environment.apiBaseUrl}/person`, body, { headers }).pipe(
+    return this.httpClient.post<IRespuestaHttpEstandar<Person>>(`${environment.apiBaseUrl}/sales/person`, body, { headers }).pipe(
       map((resultado: IRespuestaHttpEstandar<Person>) => {
         if (resultado.status === 201 && resultado.data) {
           return resultado.data;
@@ -109,7 +109,7 @@ export class PersonService {
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
 
     return this.httpClient
-      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/person/${personId}`, { headers: headers })
+      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/sales/person/${personId}`, { headers: headers })
       .pipe(
         map((resultado: IRespuestaHttpEstandar<number>) => {
           if (resultado.status === 200 && resultado.data) {

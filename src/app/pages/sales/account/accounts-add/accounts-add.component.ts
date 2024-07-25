@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -25,7 +25,7 @@ import { ValidadorUrl } from '../../../../shared/validators/url.validator';
   templateUrl: './accounts-add.component.html',
   styleUrl: './accounts-add.component.scss'
 })
-export class AccountsAddComponent {
+export class AccountsAddComponent implements OnInit{
   public cargando$ = new BehaviorSubject<boolean>(false);
   public accountForm = this.crearFormulario();
   public sectors: Array<Sector> = [];

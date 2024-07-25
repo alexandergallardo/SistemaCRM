@@ -89,14 +89,25 @@ export class CustomSidenavComponent {
           icon: 'settings',
           label: 'Servicios',
           route: 'services',
-        }
+        },
+        {
+          icon: 'settings',
+          label: 'Roles',
+          route: 'roles',
+        },
       ]
+    },
+    {
+      icon: 'supervised_user_circle',
+      label: 'Usuarios',
+      route: 'users'
     },
     {
       icon: 'info',
       label: 'Información',
       route: 'information'
     }
+
   ]);
 
   profilePicSize = computed(() => this.sideNavCollapsed() ? '32' : '100');

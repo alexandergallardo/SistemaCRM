@@ -3,7 +3,6 @@ import { environment } from "../../../environments/environment.development";
 import { Injectable } from "@angular/core";
 import { Observable, catchError, map, throwError } from "rxjs";
 import { IRespuestaHttpEstandar } from "../models/http.models";
-import { Sector } from "../models/sector.models";
 import { Service } from "../models/service.models";
 
 @Injectable({
@@ -23,7 +22,7 @@ export class ServicesService {
       .set('numeroPagina', numeroPagina.toString())
       .set('totalPagina', totalPagina.toString());
 
-    return this.httpClient.get<IRespuestaHttpEstandar<Service[]>>(`${environment.apiBaseUrl}/sales/service`, { params }).pipe(
+    return this.httpClient.get<IRespuestaHttpEstandar<Service[]>>(`${environment.apiBaseUrl}/settings/service`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Service[]>) => {
         if (respuesta.status === 200) {
           return respuesta;
@@ -50,7 +49,7 @@ export class ServicesService {
       
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
 
-    return this.httpClient.post<IRespuestaHttpEstandar<Service>>(`${environment.apiBaseUrl}/sales/service`, params, { headers: headers }).pipe(
+    return this.httpClient.post<IRespuestaHttpEstandar<Service>>(`${environment.apiBaseUrl}/settings/service`, params, { headers: headers }).pipe(
       map((resultado: IRespuestaHttpEstandar<Service>) => {
         if (resultado.status === 201 && resultado.data) {
           return resultado.data;
@@ -69,7 +68,7 @@ export class ServicesService {
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
 
     return this.httpClient
-      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/sales/service/${serviceId}`, { headers: headers })
+      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/settings/service/${serviceId}`, { headers: headers })
       .pipe(
         map((resultado: IRespuestaHttpEstandar<number>) => {
           if (resultado.status === 200 && resultado.data) {

@@ -22,7 +22,7 @@ export class SectorsService {
       .set('numeroPagina', numeroPagina.toString())
       .set('totalPagina', totalPagina.toString());
 
-    return this.httpClient.get<IRespuestaHttpEstandar<Sector[]>>(`${environment.apiBaseUrl}/account/sector`, { params }).pipe(
+    return this.httpClient.get<IRespuestaHttpEstandar<Sector[]>>(`${environment.apiBaseUrl}/settings/sector`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Sector[]>) => {
         if (respuesta.status === 200) {
           return respuesta;
@@ -42,7 +42,7 @@ export class SectorsService {
 
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
 
-    return this.httpClient.post<IRespuestaHttpEstandar<Sector>>(`${environment.apiBaseUrl}/account/sector`, params, { headers: headers }).pipe(
+    return this.httpClient.post<IRespuestaHttpEstandar<Sector>>(`${environment.apiBaseUrl}/settings/sector`, params, { headers: headers }).pipe(
       map((resultado: IRespuestaHttpEstandar<Sector>) => {
         if (resultado.status === 201 && resultado.data) {
           return resultado.data;
@@ -61,7 +61,7 @@ export class SectorsService {
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
 
     return this.httpClient
-      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/account/sector/${sectorId}`, { headers: headers })
+      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/settings/sector/${sectorId}`, { headers: headers })
       .pipe(
         map((resultado: IRespuestaHttpEstandar<number>) => {
           if (resultado.status === 200 && resultado.data) {

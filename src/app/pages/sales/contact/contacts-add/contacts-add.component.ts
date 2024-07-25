@@ -61,7 +61,7 @@ export class ContactsAddComponent implements AfterViewInit {
       name: new FormControl('', [Validators.required]),
       position: new FormControl('', [Validators.required]),
       email: new FormControl('', []),
-      mobile: new FormControl(null, [Validators.required]),
+      mobile: new FormControl('', [Validators.required]),
       accountId: new FormControl<number | null>(null, []),
       personType: new FormControl('contacto', [Validators.required]),
       salesAgentId: new FormControl(2, [Validators.required]),
