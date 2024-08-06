@@ -14,6 +14,9 @@ import { Opportunity } from '../../../../core/models/opportunity.models';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SalesStage } from '../../../../core/models/sales_stage.models';
 import { SalesStageService } from '../../../../core/services/sales-stage.service';
+import { OpportunityAddComponent } from '../opportunity-add/opportunity-add.component';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-opportunities',
@@ -32,7 +35,9 @@ export class OpportunityListComponent implements OnInit, AfterViewInit {
 
   constructor(
     private readonly oportunitiesService: OportunitiesService,
-    private readonly salesStageService: SalesStageService
+    private readonly matDialog: MatDialog,
+    private readonly salesStageService: SalesStageService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -88,5 +93,21 @@ export class OpportunityListComponent implements OnInit, AfterViewInit {
           this.totalRegistros = 0;
         }
       });
+  }
+
+  public agregar() {
+    const ventana = this.matDialog.open(OpportunityAddComponent, {
+      width: '1100px',
+    });
+
+    ventana.afterClosed().subscribe((respuesta) => {
+      if (respuesta === true) {
+        this.notificationService.Snack('Se creó la oportunidad con éxito', '');
+        this.listarOportunidades();
+      }
+      if (respuesta === false) {
+        this.notificationService.Snack('Ocurrió un error al crear la oportunidad', '');
+      }
+    });
   }
 }

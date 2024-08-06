@@ -1,0 +1,91 @@
+<mat-card class="card-emergente">
+  <mat-toolbar color="primary">
+    Nueva oportunidad
+    <span class="espacio"> </span>
+    <button mat-icon-button type="button" (click)="cerrarVentana()">
+      <mat-icon> close </mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <form [formGroup]="opportunityForm" autocomplete="off">
+    <div class="spinner-container-emergente" *ngIf="cargando$ | async">
+      <mat-spinner></mat-spinner>
+    </div>
+    <mat-card-content>
+      <mat-grid-list cols="3" rowHeight="70px">
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Cliente </mat-label>
+            <input
+              matInput
+              [matAutocomplete]="AutoCliente"
+              formControlName="accountName"
+              #InputCliente
+              [readonly]="opportunityForm.value.accountId ? true : false" />
+            <mat-icon color="primary" matSuffix (click)="removerCliente()" *ngIf="opportunityForm.value.accountId">
+              remove_circle
+            </mat-icon>
+            <mat-autocomplete #AutoCliente="matAutocomplete" (optionSelected)="clienteSeleccionado($event.option.value)">
+              <mat-option *ngFor="let account of accounts" [value]="account">
+                {{ account.companyName }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2">
+          <mat-form-field class="columnas-2">
+            <mat-label> Contacto </mat-label>
+            <input
+              matInput
+              [matAutocomplete]="AutoContacto"
+              formControlName="contactName"
+              [readonly]="opportunityForm.value.personId ? true : false" />
+            <mat-icon color="primary" matSuffix (click)="removerContacto()" *ngIf="opportunityForm.value.personId">
+              remove_circle
+            </mat-icon>
+            <mat-autocomplete #AutoContacto="matAutocomplete" (optionSelected)="contactoSeleccionado($event.option.value)">
+              <mat-option *ngFor="let contact of contacts" [value]="contact">
+                {{ contact.name }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Probabilidad </mat-label>
+            <mat-select matInput formControlName="probability">
+              <mat-option [value]="'BAJA'"> BAJA </mat-option>
+              <mat-option [value]="'MEDIA'"> MEDIA </mat-option>
+              <mat-option [value]="'ALTA'"> ALTA </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Monto </mat-label>
+            <input matInput formControlName="baseAmount" />
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="1">
+          <mat-form-field class="columnas-1">
+            <mat-label> Servicio </mat-label>
+            <mat-select formControlName="serviceId">
+              <mat-option *ngFor="let service of services" [value]="service.id">
+                {{ service.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        mat-raised-button
+        color="primary"
+        [disabled]="opportunityForm.invalid || (cargando$ | async)"
+        (click)="guardar()">
+        Guardar
+      </button>
+    </mat-card-actions>
+  </form>
+</mat-card>

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { IRespuestaHttpEstandar } from '../models/http.models';
 import { Contact, CustomAttribute, Lead, Person } from '../models/person.models';
 import { Observable, catchError, map, throwError } from 'rxjs';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +22,29 @@ export class PersonService {
       .set('totalPagina', totalPagina.toString());
 
     return this.httpClient.get<IRespuestaHttpEstandar<Contact[]>>(`${environment.apiBaseUrl}/sales/person/contacts`, { params }).pipe(
+      map((respuesta: IRespuestaHttpEstandar<Contact[]>) => {
+        if (respuesta.status === 200) {
+          return respuesta;
+        } else {
+          throw new Error('Respuesta no válida');
+        }
+      }),
+      catchError((error) => {
+        console.error('Error al obtener contactos:', error);
+        return throwError(() => new Error('Error al obtener contactos'));
+      })
+    );
+  }
+
+  public getContactsByAccount(
+    accountId: number,
+    totalPagina: number,
+  ): Observable<IRespuestaHttpEstandar<Contact[]>> {
+    const params = new HttpParams()
+      .set('accountId', accountId.toString())
+      .set('totalPagina', totalPagina.toString());
+
+    return this.httpClient.get<IRespuestaHttpEstandar<Contact[]>>(`${environment.apiBaseUrl}/sales/person/contacts-by-account`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Contact[]>) => {
         if (respuesta.status === 200) {
           return respuesta;

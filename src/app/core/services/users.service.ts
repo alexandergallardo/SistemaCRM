@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { IRespuestaHttpEstandar } from '../models/http.models';
 import { User } from '../models/users.models';
 import { Observable, catchError, map, throwError } from 'rxjs';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
