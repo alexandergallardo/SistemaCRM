@@ -21,6 +21,7 @@ import { ContactsAddComponent } from '../contacts-add/contacts-add.component';
 import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-contacts-list',
   standalone: true,
@@ -35,14 +36,17 @@ export class ContactsListComponent implements OnInit {
   public contactos: Contact[] = [];
   public cargando$ = new BehaviorSubject<boolean>(false);
   public formControl = new FormControl('');
+  private schema: string = '';
 
   constructor(
     private readonly personService: PersonService,
     private readonly matDialog: MatDialog,
     private readonly notificationService: NotificationService,
+    private readonly authService: AuthService,
   ) { }
 
   ngOnInit(): void {
+    this.inicializarSchema();
     this.cargarInformacion();
   }
 
@@ -74,7 +78,12 @@ export class ContactsListComponent implements OnInit {
       this.formControl.value!,
       this.paginator?.pageIndex + 1 || 1, 
       this.paginator?.pageSize || 20,
+      this.schema
     );
+  }
+
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
   }
 
   public agregar() {
@@ -103,7 +112,7 @@ export class ContactsListComponent implements OnInit {
       if (response === true) {
         this.cargando$.next(true);
         this.personService
-          .delete(contact.id)
+          .delete(contact.id, this.schema)
           .pipe(
             finalize(() => {
               this.cargando$.next(false);
@@ -144,10 +153,10 @@ export class ContactsDataSource implements DataSource<Contact> {
     this.cargandoInformacion$.complete();
   }
 
-  listarContactos(nombre: string, numeroPagina: number, totalPagina: number) {
+  listarContactos(nombre: string, numeroPagina: number, totalPagina: number, schema: string) {
     this.cargandoInformacion$.next(true);
     this.personService
-      .getContacts(nombre, numeroPagina, totalPagina)
+      .getContacts(nombre, numeroPagina, totalPagina, schema)
       .pipe(
         finalize(() => {
           this.cargandoInformacion$.next(false);

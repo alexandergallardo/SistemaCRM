@@ -20,6 +20,7 @@ import { ServicesAddComponent } from '../services-add/services-add.component';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
+import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-services-list',
   standalone: true,
@@ -34,14 +35,17 @@ export class ServicesListComponent implements OnInit, AfterViewInit {
   public servicios: Service[] = [];
   public cargando$ = new BehaviorSubject<boolean>(false);
   public formControl = new FormControl('');
+  private schema: string = '';
 
   constructor(
     private servicesService: ServicesService,
     private readonly notificationService: NotificationService,
     private readonly matDialog: MatDialog,
+    private readonly authService: AuthService,
   ) { }
 
   ngOnInit(): void {
+    this.inicializarSchema();
     this.cargarInformacion();
   }
 
@@ -73,10 +77,15 @@ export class ServicesListComponent implements OnInit, AfterViewInit {
       this.formControl.value!,
       this.paginator?.pageIndex + 1 || 1, 
       this.paginator?.pageSize || 20,
+      this.schema
     );
     this.dataSource.connect().subscribe(services => {
       this.servicios = services;
     });
+  }
+
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
   }
 
   public agregar() {
@@ -114,7 +123,7 @@ export class ServicesListComponent implements OnInit, AfterViewInit {
       if (response === true) {
         this.cargando$.next(true);
         this.servicesService
-          .delete(service.id)
+          .delete(service.id, this.schema)
           .pipe(
             finalize(() => {
               this.cargando$.next(false);
@@ -157,10 +166,10 @@ export class ServicesDataSource implements DataSource<Service> {
     this.cargandoInformacion$.complete();
   }
 
-  listarServicios(nombre: string, numeroPagina: number, totalPagina: number) {
+  listarServicios(nombre: string, numeroPagina: number, totalPagina: number, schema: string) {
     this.cargandoInformacion$.next(true);
     this.servicesService
-      .getServices(nombre, numeroPagina, totalPagina)
+      .getServices(nombre, numeroPagina, totalPagina, schema)
       .pipe(
         finalize(() => {
           this.cargandoInformacion$.next(false);

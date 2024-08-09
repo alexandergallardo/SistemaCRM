@@ -1,4 +1,4 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,6 +18,9 @@ import { CustomAttribute, Lead } from '../../../../core/models/person.models';
 import { PersonService } from '../../../../core/services/person.service';
 import { Account } from '../../../../core/models/account.models';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { AuthService } from '../../../../core/services/auth.service';
+import { EstadoGlobal, obtenerUsuario } from '../../../../core/reducers/estado-global.reducer';
+import { Store } from '@ngrx/store';
 @Component({
   selector: 'app-leads-add',
   standalone: true,
@@ -25,20 +28,27 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
   templateUrl: './leads-add.component.html',
   styleUrl: './leads-add.component.scss'
 })
-export class LeadsAddComponent implements AfterViewInit {
+export class LeadsAddComponent implements AfterViewInit, OnInit {
   public cargando$ = new BehaviorSubject<boolean>(false);
   public leadForm = this.crearFormulario();
   public leads: Array<Lead> = [];
   public accounts: Array<Account> = [];
+  private schema: string = '';
+  private attributeIds: { [key: string]: number } = {};
 
   constructor(
     private readonly personService: PersonService,
     private readonly accountsService: AccountsService,
     private readonly matDialogRef: MatDialogRef<LeadsAddComponent>,
+    private readonly authService: AuthService,
+    private store: Store<EstadoGlobal>
   ) {}
 
   ngOnInit() {
+    this.inicializarSchema();
     this.listarClientes();
+    this.cargarAttributeIds();
+    this.obtenerUsuario();
   }
 
   ngAfterViewInit() {
@@ -54,6 +64,17 @@ export class LeadsAddComponent implements AfterViewInit {
       .subscribe();
   }
 
+  private obtenerUsuario() {
+    this.store.select(obtenerUsuario).subscribe((usuario) => {
+      if (usuario) {
+        console.log(usuario.id);
+        this.leadForm.patchValue({
+          salesAgentId: usuario.id
+        });
+      }
+    });
+  }
+  
   private crearFormulario() {
     return new FormGroup({
       name: new FormControl('', [Validators.required]),
@@ -62,7 +83,7 @@ export class LeadsAddComponent implements AfterViewInit {
       mobile: new FormControl(null, [Validators.required]),
       accountId: new FormControl<number | null>(null, []),
       personType: new FormControl('lead', [Validators.required]),
-      salesAgentId: new FormControl(2, [Validators.required]),
+      salesAgentId: new FormControl<number | null>(null, [Validators.required]),
       accountName: new FormControl('', []),
       leadStatus: new FormControl('', []),
       leadSource: new FormControl('', []),
@@ -70,8 +91,20 @@ export class LeadsAddComponent implements AfterViewInit {
     });
   }
 
+  private cargarAttributeIds() {
+    this.personService.getAttributeIds(this.schema).subscribe({
+        next: (ids) => {
+            this.attributeIds = ids;
+            console.log('Attribute IDs: ', this.attributeIds);
+        },
+        error: (error) => {
+            console.error('Error al cargar IDs de atributos: ', error);
+        }
+    });
+}
+
   public listarCliente(nombre: string) {
-    this.accountsService.getAccounts('', nombre, '', 1, 5).subscribe((res) => {
+    this.accountsService.getAccounts('', nombre, null, 1, 5, this.schema).subscribe((res) => {
       this.accounts = res.data;
     });
   }
@@ -89,15 +122,24 @@ export class LeadsAddComponent implements AfterViewInit {
 
   public guardar() {
     if (this.leadForm.valid) {
-    this.cargando$.next(true);
+      this.cargando$.next(true);
 
-    const customAttributes = [
-      { attributeId: 22, value: this.leadForm.value.leadStatus },
-      { attributeId: 23, value: this.leadForm.value.leadSource },
-      { attributeId: 24, value: this.leadForm.value.leadRating },
-    ].filter(attr => attr.value !== null && attr.value !== undefined && attr.value !== '');
+      if (!this.attributeIds || Object.keys(this.attributeIds).length === 0) {
+        console.error('No se han asignado IDs de atributos. Revisa la carga de IDs.');
+        return;
+      }
 
-    console.log('Custom Attributes:', customAttributes);
+      const customAttributes: CustomAttribute[] = [
+        { attributeId: this.attributeIds['Estado del lead'], value: this.leadForm.value.leadStatus as string },
+        { attributeId: this.attributeIds['Fuente del lead'], value: this.leadForm.value.leadSource as string },
+        { attributeId: this.attributeIds['Valoracion del lead'], value: this.leadForm.value.leadRating as string },
+      ].filter(attr => attr.value !== null && attr.value !== undefined && attr.value !== '') as CustomAttribute[];
+
+
+      if (customAttributes.length === 0) {
+        console.error('No se han asignado valores válidos para los atributos.');
+        return;
+      }
 
       this.personService
         .create(
@@ -109,6 +151,7 @@ export class LeadsAddComponent implements AfterViewInit {
           this.leadForm.value.personType!,
           this.leadForm.value.salesAgentId!,
           customAttributes as CustomAttribute[],
+          this.schema
         )
         .pipe(
           finalize(() => {
@@ -127,9 +170,12 @@ export class LeadsAddComponent implements AfterViewInit {
     }
   }
 
-        
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
+  }
+    
   private listarClientes() {
-    this.accountsService.getAccounts('','','',1,5).subscribe((resultado) => {
+    this.accountsService.getAccounts('','',null,1,5, this.schema).subscribe((resultado) => {
       this.accounts = resultado.data;
     });
   }

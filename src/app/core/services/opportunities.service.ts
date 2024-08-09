@@ -15,10 +15,12 @@ export class OportunitiesService {
   public getOportunities(
     numeroPagina: number, 
     totalPagina: number,
+    schema: string,
   ): Observable<IRespuestaHttpEstandar<Opportunity[]>> {
     const params = new HttpParams()
       .set('numeroPagina', numeroPagina.toString())
-      .set('totalPagina', totalPagina.toString());
+      .set('totalPagina', totalPagina.toString())
+      .set('schema', schema);
 
     return this.httpClient.get<IRespuestaHttpEstandar<Opportunity[]>>(`${environment.apiBaseUrl}/sales/opportunities`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Opportunity[]>) => {
@@ -44,20 +46,23 @@ export class OportunitiesService {
     serviceId: number,
     salesAgentId: number,
     salesStageId: number,
+    schema: string,
   ): Observable<Opportunity> {
-    const params = new HttpParams()
-      .set('accountId', accountId)
-      .set('personId', personId)
-      .set('probability', probability)
-      .set('currency', currency)
-      .set('baseAmount', baseAmount)
-      .set('serviceId', serviceId)
-      .set('salesAgentId', salesAgentId)
-      .set('salesStageId', salesStageId);
+    const body = {
+      accountId,
+      personId,
+      probability,
+      currency,
+      baseAmount,
+      serviceId,
+      salesAgentId,
+      salesStageId,
+      schema
+    };
 
-    const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
-    return this.httpClient.post<IRespuestaHttpEstandar<Opportunity>>(`${environment.apiBaseUrl}/sales/opportunities`, params, { headers: headers }).pipe(
+    return this.httpClient.post<IRespuestaHttpEstandar<Opportunity>>(`${environment.apiBaseUrl}/sales/opportunities`, body, { headers }).pipe(
       map((resultado: IRespuestaHttpEstandar<Opportunity>) => {
         if (resultado.status === 201 && resultado.data) {
           return resultado.data;
@@ -72,7 +77,74 @@ export class OportunitiesService {
     );
   }
 
-  updateOpportunityStage(opportunityId: number, salesStageId: number): Observable<any> {
-    return this.httpClient.post(`${environment.apiBaseUrl}/sales/opportunities/update-stage`, { opportunityId, salesStageId });
+  public update(
+    id: number,
+    accountId: number,
+    personId: number,
+    probability: string,
+    currency: string,
+    baseAmount: number,
+    serviceId: number,
+    salesAgentId: number,
+    salesStageId: number,
+    schema: string,
+  ): Observable<number> {
+    const body = {
+      accountId,
+      personId,
+      probability,
+      currency,
+      baseAmount,
+      serviceId,
+      salesAgentId,
+      salesStageId,
+      schema
+    };
+
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+
+    return this.httpClient.put<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/sales/opportunities/${id}`, body, { headers }).pipe(
+      map((resultado: IRespuestaHttpEstandar<number>) => {
+        if (resultado.status === 200 && resultado.data) {
+          return resultado.data;
+        } else {
+          throw new Error('Error en la actualización de la oportunidad');
+        }
+      }),
+      catchError((error) => {
+        console.error('Error al actualizar la oportunidad:', error);
+        return throwError(() => new Error('Error al actualizar la oportunidad'));
+      }),
+    );
+  }
+
+  public delete(opportunityId: number, schema: string): Observable<number> {
+    const params = new HttpParams().set('schema', schema);
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+
+    return this.httpClient.delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/sales/opportunities/${opportunityId}`, { headers, params }).pipe(
+      map((resultado: IRespuestaHttpEstandar<number>) => {
+        if (resultado.status === 200 && resultado.data) {
+          return resultado.data;
+        } else {
+          throw new Error('Error en la eliminación de la oportunidad');
+        }
+      }),
+      catchError((error) => {
+        console.error('Error al eliminar la oportunidad:', error);
+        return throwError(() => new Error('Error al eliminar la oportunidad'));
+      }),
+    );
+  }
+
+  public updateOpportunityStage(opportunityId: number, salesStageId: number, schema: string): Observable<any> {
+    const body = {
+      opportunityId,
+      salesStageId,
+      schema
+    };
+
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient.post(`${environment.apiBaseUrl}/sales/opportunities/update-stage`, body, { headers });
   }
 }

@@ -4,25 +4,30 @@ import { Injectable } from "@angular/core";
 import { Observable, catchError, map, throwError } from "rxjs";
 import { IRespuestaHttpEstandar } from "../models/http.models";
 import { Service } from "../models/service.models";
+import { HttpUtilsService } from "../../shared/services/http-utils.service";
 
 @Injectable({
   providedIn: 'root',
 })
 
 export class ServicesService {
-  constructor(private readonly httpClient: HttpClient) { }
+  constructor(private readonly httpClient: HttpClient, private readonly httpUtilsService: HttpUtilsService) { }
 
   public getServices(
     nombre: string,
     numeroPagina: number, 
     totalPagina: number,
+    schema: string,
   ): Observable<IRespuestaHttpEstandar<Service[]>> {
     const params = new HttpParams()
       .set('name', nombre)
       .set('numeroPagina', numeroPagina.toString())
-      .set('totalPagina', totalPagina.toString());
+      .set('totalPagina', totalPagina.toString())
+      .set('schema', schema);
 
-    return this.httpClient.get<IRespuestaHttpEstandar<Service[]>>(`${environment.apiBaseUrl}/settings/service`, { params }).pipe(
+    const headers = this.httpUtilsService.getHeaders();
+
+    return this.httpClient.get<IRespuestaHttpEstandar<Service[]>>(`${environment.apiBaseUrl}/settings/service`, { params, headers }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Service[]>) => {
         if (respuesta.status === 200) {
           return respuesta;
@@ -41,15 +46,18 @@ export class ServicesService {
     code: string,
     nombre: string,
     measurementUnit: string,
+    schema: string,
   ): Observable<Service> {
-    const params = new HttpParams()
-      .set('code', code)
-      .set('name', nombre)
-      .set('measurementUnit', measurementUnit);
+    const body = {
+      code,
+      name: nombre,
+      measurementUnit,
+      schema
+    };
       
-    const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    const headers = this.httpUtilsService.getHeaders();
 
-    return this.httpClient.post<IRespuestaHttpEstandar<Service>>(`${environment.apiBaseUrl}/settings/service`, params, { headers: headers }).pipe(
+    return this.httpClient.post<IRespuestaHttpEstandar<Service>>(`${environment.apiBaseUrl}/settings/service`, body, { headers }).pipe(
       map((resultado: IRespuestaHttpEstandar<Service>) => {
         if (resultado.status === 201 && resultado.data) {
           return resultado.data;
@@ -64,11 +72,13 @@ export class ServicesService {
     );
   }
 
-  public delete(serviceId: number): Observable<number> {
-    const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+  public delete(serviceId: number, schema: string): Observable<number> {
+    const params = new HttpParams().set('schema', schema);
+
+    const headers = this.httpUtilsService.getHeaders();
 
     return this.httpClient
-      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/settings/service/${serviceId}`, { headers: headers })
+      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/settings/service/${serviceId}`, { headers, params })
       .pipe(
         map((resultado: IRespuestaHttpEstandar<number>) => {
           if (resultado.status === 200 && resultado.data) {
@@ -83,5 +93,36 @@ export class ServicesService {
           return throwError(() => new Error('Error al eliminar servicio'));
         }),
       );
+  }
+
+  public update(
+    serviceId: number,
+    code: string,
+    nombre: string,
+    measurementUnit: string,
+    schema: string,
+  ): Observable<number> {
+    const body = {
+      code,
+      name: nombre,
+      measurementUnit,
+      schema
+    };
+
+    const headers = this.httpUtilsService.getHeaders();
+
+    return this.httpClient.put<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/settings/service/${serviceId}`, body, { headers }).pipe(
+      map((resultado: IRespuestaHttpEstandar<number>) => {
+        if (resultado.status === 200 && resultado.data) {
+          return resultado.data;
+        } else {
+          throw new Error('Error en la actualización del servicio');
+        }
+      }),
+      catchError((error) => {
+        console.error('Error al actualizar servicio:', error);
+        return throwError(() => new Error('Error al actualizar servicio'));
+      })
+    );
   }
 }

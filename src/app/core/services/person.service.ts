@@ -15,11 +15,14 @@ export class PersonService {
     nombre: string,
     numeroPagina: number,
     totalPagina: number,
+    schema: string,
   ): Observable<IRespuestaHttpEstandar<Contact[]>> {
-    const params = new HttpParams()
-      .set('name', nombre)
-      .set('numeroPagina', numeroPagina.toString())
-      .set('totalPagina', totalPagina.toString());
+    const params = {
+      name: nombre,
+      numeroPagina: numeroPagina.toString(),
+      totalPagina: totalPagina.toString(),
+      schema: schema,
+    };
 
     return this.httpClient.get<IRespuestaHttpEstandar<Contact[]>>(`${environment.apiBaseUrl}/sales/person/contacts`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Contact[]>) => {
@@ -39,10 +42,13 @@ export class PersonService {
   public getContactsByAccount(
     accountId: number,
     totalPagina: number,
+    schema: string,
   ): Observable<IRespuestaHttpEstandar<Contact[]>> {
-    const params = new HttpParams()
-      .set('accountId', accountId.toString())
-      .set('totalPagina', totalPagina.toString());
+    const params = {
+      accountId: accountId.toString(),
+      totalPagina: totalPagina.toString(),
+      schema: schema,
+    };
 
     return this.httpClient.get<IRespuestaHttpEstandar<Contact[]>>(`${environment.apiBaseUrl}/sales/person/contacts-by-account`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Contact[]>) => {
@@ -63,11 +69,14 @@ export class PersonService {
     nombre: string,
     numeroPagina: number, 
     totalPagina: number,
+    schema: string,
   ): Observable<IRespuestaHttpEstandar<Lead[]>> {
-    const params = new HttpParams()
-      .set('name', nombre)
-      .set('numeroPagina', numeroPagina.toString())
-      .set('totalPagina', totalPagina.toString());
+    const params = {
+      name: nombre,
+      numeroPagina: numeroPagina.toString(),
+      totalPagina: totalPagina.toString(),
+      schema: schema,
+    };
 
     return this.httpClient.get<IRespuestaHttpEstandar<Lead[]>>(`${environment.apiBaseUrl}/sales/person/leads`, { params }).pipe(
       map((respuesta: IRespuestaHttpEstandar<Lead[]>) => {
@@ -84,8 +93,9 @@ export class PersonService {
     );
   }
 
-  public getOneLead(id: number): Observable<IRespuestaHttpEstandar<Lead>> {
-    return this.httpClient.get<IRespuestaHttpEstandar<Lead>>(`${environment.apiBaseUrl}/sales/person/leads/${id}`);
+  public getOneLead(id: number, schema: string): Observable<IRespuestaHttpEstandar<Lead>> {
+    const params = { schema };
+    return this.httpClient.get<IRespuestaHttpEstandar<Lead>>(`${environment.apiBaseUrl}/sales/person/leads/${id}`, { params });
   }
 
   public create(
@@ -97,6 +107,7 @@ export class PersonService {
     personType: string,
     salesAgentId: number,
     customAttributes: CustomAttribute[],
+    schema: string,
   ): Observable<Person> {
     const body = {
       name,
@@ -106,7 +117,8 @@ export class PersonService {
       accountId,
       personType,
       salesAgentId,
-      customAttributes
+      customAttributes,
+      schema,
     };
 
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
@@ -127,24 +139,77 @@ export class PersonService {
       }),
     );
   }
+  
+  public update(
+    id: number,
+    name: string,
+    position: string,
+    email: string,
+    mobile: string,
+    accountId: number,
+    personType: string,
+    salesAgentId: number,
+    customAttributes: CustomAttribute[],
+    schema: string,
+  ): Observable<number> {
+    const body = {
+      name,
+      position,
+      email,
+      mobile,
+      accountId,
+      personType,
+      salesAgentId,
+      customAttributes,
+      schema,
+    };
 
-  public delete(personId: number): Observable<number> {
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+
+    return this.httpClient.put<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/sales/person/${id}`, body, { headers }).pipe(
+      map((resultado: IRespuestaHttpEstandar<number>) => {
+        if (resultado.status === 200) {
+          return resultado.data;
+        } else {
+          throw new Error('Error en la actualización del contacto');
+        }
+      }),
+      catchError((error) => {
+        console.error('Error al actualizar el contacto:', error);
+        return throwError(() => new Error('Error al actualizar el contacto'));
+      }),
+    );
+  }
+
+  public delete(personId: number, schema: string): Observable<number> {
+    const params = { schema };
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
 
     return this.httpClient
-      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/sales/person/${personId}`, { headers: headers })
+      .delete<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/sales/person/${personId}`, { params, headers })
       .pipe(
         map((resultado: IRespuestaHttpEstandar<number>) => {
           if (resultado.status === 200 && resultado.data) {
             return resultado.data;
           }
           else {
-            throw new Error('Error en la eliminación del contacto ');
+            throw new Error('Error en la eliminación del contacto');
           }
         }),
         catchError((error) => {
-          console.error('Error al eliminar el contacto :', error);
+          console.error('Error al eliminar el contacto:', error);
           return throwError(() => new Error('Error al eliminar el contacto'));
+        }),
+      );
+  }
+
+  public getAttributeIds(schema: string): Observable<{ [key: string]: number }> {
+    return this.httpClient
+      .get<{ [key: string]: number }>(`${environment.apiBaseUrl}/sales/attribute/${schema}`)
+      .pipe(
+        catchError((error) => {
+          console.error('Error al obtener los IDs de los atributos:', error);
+          return throwError(() => new Error('Error al obtener los IDs de los atributos'));
         }),
       );
   }

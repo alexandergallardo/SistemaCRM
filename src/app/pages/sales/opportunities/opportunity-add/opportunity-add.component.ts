@@ -20,6 +20,9 @@ import { PersonService } from '../../../../core/services/person.service';
 import { AccountsService } from '../../../../core/services/accounts.service';
 import { ServicesService } from '../../../../core/services/services.service';
 import { OportunitiesService } from '../../../../core/services/opportunities.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { EstadoGlobal, obtenerUsuario } from '../../../../core/reducers/estado-global.reducer';
+import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'app-opportunity-add',
@@ -34,6 +37,7 @@ export class OpportunityAddComponent {
   public contacts: Array<Contact> = [];
   public accounts: Array<Account> = [];
   public services: Array<Service> = [];
+  private schema: string = '';
   
   constructor(
     private readonly personService: PersonService,
@@ -41,11 +45,15 @@ export class OpportunityAddComponent {
     private readonly serviceService: ServicesService,
     private readonly oportunitiesService: OportunitiesService,
     private readonly matDialogRef: MatDialogRef<OpportunityAddComponent>,
+    private readonly authService: AuthService,
+    private store: Store<EstadoGlobal>
   ) {}
 
   ngOnInit() {
+    this.inicializarSchema();
     this.listarClientes();
     this.listarServicios();
+    this.obtenerUsuario();
   }
 
   private crearFormulario() {
@@ -56,13 +64,27 @@ export class OpportunityAddComponent {
       currency: new FormControl('S/', []),
       baseAmount: new FormControl<number | null>(null, []),
       serviceId: new FormControl<number | null>(null, []),
-      salesAgentId: new FormControl<number | null>(1, []),
+      salesAgentId: new FormControl<number | null>(null, []),
       salesStageId: new FormControl<number | null>(1, []),
       accountName: new FormControl('', []),
       contactName: new FormControl({ value: '', disabled: true }, []),
     })
   }
 
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
+  }
+
+  private obtenerUsuario() {
+    this.store.select(obtenerUsuario).subscribe((usuario) => {
+      if (usuario) {
+        this.opportunityForm.patchValue({
+          salesAgentId: usuario.id
+        });
+      }
+    });
+  }
+  
   public clienteSeleccionado(account: Account) {
     this.opportunityForm.get('contactName')!.enable();
     this.opportunityForm.get('contactName')!.setValue(null);
@@ -75,7 +97,7 @@ export class OpportunityAddComponent {
 
   public listarContacto(nombre: string) {
     this.personService
-      .getContactsByAccount(this.opportunityForm.get('accountId')!.value!, 20)
+      .getContactsByAccount(this.opportunityForm.get('accountId')!.value!, 20, this.schema)
       .subscribe((res) => {
         this.contacts = res.data;
       });
@@ -99,13 +121,13 @@ export class OpportunityAddComponent {
   }
 
   private listarClientes() {
-    this.accountsService.getAccounts('','','',1,5).subscribe((resultado) => {
+    this.accountsService.getAccounts('','',null,1,5, this.schema).subscribe((resultado) => {
       this.accounts = resultado.data;
     });
   }
 
   private listarServicios() {
-    this.serviceService.getServices('',1,5).subscribe((resultado) => {
+    this.serviceService.getServices('',1,5, this.schema).subscribe((resultado) => {
       this.services = resultado.data;
     });
   }
@@ -124,6 +146,7 @@ export class OpportunityAddComponent {
           this.opportunityForm.value.serviceId!,
           this.opportunityForm.value.salesAgentId!,
           this.opportunityForm.value.salesStageId!,
+          this.schema
         )
         .pipe(
           finalize(() => {

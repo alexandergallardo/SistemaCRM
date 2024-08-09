@@ -17,6 +17,7 @@ import { CommonModule } from '@angular/common';
 export class OpportunityListTableComponent {
   @Input() oportunidades: Opportunity[] = [];
   @Input() totalRegistros!: number;
+  @Input() schema: string = '';
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   public displayedColumns = ['accountName', 'personName', 'serviceName', 'baseAmount', 'probability', 'salesStageName', 'salesAgentName', 'options'];

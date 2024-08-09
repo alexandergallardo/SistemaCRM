@@ -1,4 +1,4 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,6 +19,9 @@ import { Contact, CustomAttribute } from '../../../../core/models/person.models'
 import { PersonService } from '../../../../core/services/person.service';
 import { Account } from '../../../../core/models/account.models';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { AuthService } from '../../../../core/services/auth.service';
+import { EstadoGlobal, obtenerUsuario } from '../../../../core/reducers/estado-global.reducer';
+import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'app-contacts-add',
@@ -27,20 +30,27 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
   templateUrl: './contacts-add.component.html',
   styleUrl: './contacts-add.component.scss'
 })
-export class ContactsAddComponent implements AfterViewInit {
+export class ContactsAddComponent implements OnInit, AfterViewInit {
   public cargando$ = new BehaviorSubject<boolean>(false);
   public contactForm = this.crearFormulario();
   public contacts: Array<Contact> = [];
   public accounts: Array<Account> = [];
+  private schema: string = '';
+  private attributeIds: { [key: string]: number } = {};
 
   constructor(
     private readonly personService: PersonService,
     private readonly accountsService: AccountsService,
     private readonly matDialogRef: MatDialogRef<ContactsAddComponent>,
+    private readonly authService: AuthService,
+    private store: Store<EstadoGlobal>
   ) {}
 
   ngOnInit() {
+    this.inicializarSchema();
     this.listarClientes();
+    this.cargarAttributeIds();
+    this.obtenerUsuario();
   }
 
   ngAfterViewInit() {
@@ -56,6 +66,33 @@ export class ContactsAddComponent implements AfterViewInit {
       .subscribe();
   }
 
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
+  }
+
+  private cargarAttributeIds() {
+    this.personService.getAttributeIds(this.schema).subscribe({
+      next: (ids) => {
+        this.attributeIds = ids;
+        console.log('Attribute IDs: ', this.attributeIds);
+      },
+      error: (error) => {
+        console.error('Error al cargar IDs de atributos: ', error);
+      }
+    });
+  }
+
+  private obtenerUsuario() {
+    this.store.select(obtenerUsuario).subscribe((usuario) => {
+      if (usuario) {
+        console.log(usuario.id);
+        this.contactForm.patchValue({
+          salesAgentId: usuario.id
+        });
+      }
+    });
+  }
+
   private crearFormulario() {
     return new FormGroup({
       name: new FormControl('', [Validators.required]),
@@ -64,7 +101,7 @@ export class ContactsAddComponent implements AfterViewInit {
       mobile: new FormControl('', [Validators.required]),
       accountId: new FormControl<number | null>(null, []),
       personType: new FormControl('contacto', [Validators.required]),
-      salesAgentId: new FormControl(2, [Validators.required]),
+      salesAgentId: new FormControl<number | null>(null, [Validators.required]),
       linkedin: new FormControl('', [ValidadorUrl]),
       facebook: new FormControl('', [ValidadorUrl]),
       instagram: new FormControl('', [ValidadorUrl]),
@@ -77,7 +114,7 @@ export class ContactsAddComponent implements AfterViewInit {
   }
 
   public listarCliente(nombre: string) {
-    this.accountsService.getAccounts('', nombre, '', 1, 5).subscribe((res) => {
+    this.accountsService.getAccounts('', nombre, null, 1, 5, this.schema).subscribe((res) => {
       this.accounts = res.data;
     });
   }
@@ -95,19 +132,27 @@ export class ContactsAddComponent implements AfterViewInit {
 
   public guardar() {
     if (this.contactForm.valid) {
-    this.cargando$.next(true);
+      this.cargando$.next(true);
 
-    const customAttributes = [
-      { attributeId: 19, value: this.contactForm.value.linkedin },
-      { attributeId: 20, value: this.contactForm.value.facebook },
-      { attributeId: 21, value: this.contactForm.value.instagram },
-      { attributeId: 25, value: this.contactForm.value.esPrincipal ? 'true' : 'false'},
-      { attributeId: 26, value: this.contactForm.value.tipoDecisor },
-      { attributeId: 27, value: this.contactForm.value.area },
-      { attributeId: 28, value: this.contactForm.value.gerencia }
-    ].filter(attr => attr.value !== null && attr.value !== undefined && attr.value !== '');
+      if (!this.attributeIds || Object.keys(this.attributeIds).length === 0) {
+        console.error('No se han asignado IDs de atributos. Revisa la carga de IDs.');
+        return;
+      }
 
-    console.log('Custom Attributes:', customAttributes);
+      const customAttributes: CustomAttribute[] = [
+        { attributeId: this.attributeIds['Linkedin'], value: this.contactForm.value.linkedin as string },
+        { attributeId: this.attributeIds['Facebook'], value: this.contactForm.value.facebook as string },
+        { attributeId: this.attributeIds['Instagram'], value: this.contactForm.value.instagram as string },
+        { attributeId: this.attributeIds['Es principal'], value: this.contactForm.value.esPrincipal ? 'true' : 'false' },
+        { attributeId: this.attributeIds['Tipo de decisor'], value: this.contactForm.value.tipoDecisor as string },
+        { attributeId: this.attributeIds['Area'], value: this.contactForm.value.area as string },
+        { attributeId: this.attributeIds['Gerencia'], value: this.contactForm.value.gerencia as string }
+      ].filter(attr => attr.value !== null && attr.value !== undefined && attr.value !== '') as CustomAttribute[];
+
+      if (customAttributes.length === 0) {
+        console.error('No se han asignado valores válidos para los atributos.');
+        return;
+      }
 
       this.personService
         .create(
@@ -119,6 +164,7 @@ export class ContactsAddComponent implements AfterViewInit {
           this.contactForm.value.personType!,
           this.contactForm.value.salesAgentId!,
           customAttributes as CustomAttribute[],
+          this.schema
         )
         .pipe(
           finalize(() => {
@@ -136,10 +182,9 @@ export class ContactsAddComponent implements AfterViewInit {
         });
     }
   }
-
         
   private listarClientes() {
-    this.accountsService.getAccounts('','','',1,5).subscribe((resultado) => {
+    this.accountsService.getAccounts('','',null,1,5, this.schema).subscribe((resultado) => {
       this.accounts = resultado.data;
     });
   }

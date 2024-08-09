@@ -19,6 +19,7 @@ import { UsersAddComponent } from '../users-add/users-add.component';
 import { DataSource } from '@angular/cdk/collections';
 import { IRespuestaHttpEstandar } from '../../../../core/models/http.models';
 import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-users-list',
@@ -34,14 +35,17 @@ export class UsersListComponent implements OnInit, AfterViewInit {
   public usuarios: User[] = [];
   public cargando$ = new BehaviorSubject<boolean>(false);
   public formControl = new FormControl('');
+  private schema: string = '';
 
   constructor(
     private usersService: UsersService,
     private readonly notificationService: NotificationService,
     private readonly matDialog: MatDialog,
+    private readonly authService: AuthService,
   ) { }
 
   ngOnInit(): void {
+    this.inicializarSchema();
     this.cargarInformacion();
   }
 
@@ -73,10 +77,15 @@ export class UsersListComponent implements OnInit, AfterViewInit {
       this.formControl.value!,
       this.paginator?.pageIndex + 1 || 1, 
       this.paginator?.pageSize || 20,
+      this.schema
     );
     this.dataSource.connect().subscribe(users => {
       this.usuarios = users;
     });
+  }
+
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
   }
 
   public agregar() {
@@ -95,7 +104,7 @@ export class UsersListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  /* public eliminar(user: User) {
+  public eliminar(user: User) {
     const ventana = this.matDialog.open(DeleteWindowComponent, {
       width: '600px',
       data: { object: 'el usuario', value: user.name },
@@ -105,7 +114,7 @@ export class UsersListComponent implements OnInit, AfterViewInit {
       if (response === true) {
         this.cargando$.next(true);
         this.usersService
-          .delete(user.id)
+          .delete(user.id, this.schema)
           .pipe(
             finalize(() => {
               this.cargando$.next(false);
@@ -126,7 +135,7 @@ export class UsersListComponent implements OnInit, AfterViewInit {
           });
       }
     });
-  } */
+  }
 }
 
 export class UsersDataSource implements DataSource<User> {
@@ -146,10 +155,10 @@ export class UsersDataSource implements DataSource<User> {
     this.cargandoInformacion$.complete();
   }
 
-  listarUsuarios(nombre: string, numeroPagina: number, totalPagina: number) {
+  listarUsuarios(nombre: string, numeroPagina: number, totalPagina: number, schema: string) {
     this.cargandoInformacion$.next(true);
     this.usersService
-      .getUsers(nombre, numeroPagina, totalPagina)
+      .getUsers(nombre, numeroPagina, totalPagina, schema)
       .pipe(
         finalize(() => {
           this.cargandoInformacion$.next(false);

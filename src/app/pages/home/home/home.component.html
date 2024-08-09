@@ -2,7 +2,9 @@
   <button mat-icon-button (click)="collapsed.set(!collapsed())">
     <mat-icon>menu</mat-icon>
   </button>
-  <span>Sistema CRM</span>
+  <span>CRMTrinitySales</span>
+  <span class="spacer"></span>
+  <button mat-button (click)="logout()">Cerrar Sesión</button>
 </mat-toolbar>
 <mat-sidenav-container>
   <mat-sidenav opened mode="side" [style.width]="sidenavWidth()">

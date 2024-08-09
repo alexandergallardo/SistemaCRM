@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Location } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { LEAD_ETAPAS_KEYS, obtenerEtapa } from '../../../../shared/utils/stages.utils';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-leads-view',
@@ -24,25 +25,32 @@ export class LeadsViewComponent implements OnInit {
   public readonly etapasKeys = LEAD_ETAPAS_KEYS;
   public obtenerEtapa = obtenerEtapa;
   public selectedEtapa: string | null = null;
+  private schema: string = '';
 
   constructor (
     private readonly activatedRoute: ActivatedRoute,
     private readonly personService: PersonService,
     private readonly location: Location,
+    private readonly authService: AuthService,
   ) {}
 
   ngOnInit() {
+    this.inicializarSchema();
     this.activatedRoute.paramMap.subscribe((param) => {
       const leadId = param.get('leadId');
         this.obtenerLead(Number(leadId));
     });
   }
 
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
+  }
+
   public obtenerLead(id: number): void {
     this.cargando$.next(true);
 
     this.personService
-      .getOneLead(id)
+      .getOneLead(id, this.schema)
       .pipe(
         finalize(() => {
           this.cargando$.next(false);

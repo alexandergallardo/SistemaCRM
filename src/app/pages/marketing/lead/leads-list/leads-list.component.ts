@@ -20,6 +20,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LeadsAddComponent } from '../leads-add/leads-add.component';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-leads-list',
@@ -35,6 +36,7 @@ export class LeadsListComponent implements OnInit {
   public leads: Lead[] = [];
   public cargando$ = new BehaviorSubject<boolean>(false);
   public formControl = new FormControl('');
+  private schema: string = '';
 
   constructor(
     private readonly personService: PersonService,
@@ -42,9 +44,11 @@ export class LeadsListComponent implements OnInit {
     private readonly router: Router,
     private readonly matDialog: MatDialog,
     private readonly notificationService: NotificationService,
+    private readonly authService: AuthService,
   ) { }
 
   ngOnInit(): void {
+    this.inicializarSchema();
     this.cargarInformacion();
   }
 
@@ -76,7 +80,12 @@ export class LeadsListComponent implements OnInit {
       this.formControl.value!,
       this.paginator?.pageIndex + 1 || 1, 
       this.paginator?.pageSize || 20,
+      this.schema
     );
+  }
+
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
   }
 
   public agregar() {
@@ -117,10 +126,10 @@ export class LeadsDataSource implements DataSource<Lead> {
     this.cargandoInformacion$.complete();
   }
 
-  listarLeads(nombre: string, numeroPagina: number, totalPagina: number) {
+  listarLeads(nombre: string, numeroPagina: number, totalPagina: number, schema: string) {
     this.cargandoInformacion$.next(true);
     this.personService
-      .getLeads(nombre, numeroPagina, totalPagina)
+      .getLeads(nombre, numeroPagina, totalPagina, schema)
       .pipe(
         finalize(() => {
           this.cargandoInformacion$.next(false);

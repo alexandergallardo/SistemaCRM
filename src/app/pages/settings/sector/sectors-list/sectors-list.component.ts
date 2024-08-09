@@ -20,6 +20,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { SectorsAddComponent } from '../sectors-add/sectors-add.component';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-sectors',
@@ -35,15 +36,17 @@ export class SectorsListComponent implements OnInit, AfterViewInit {
   public sectores: Sector[] = [];
   public cargando$ = new BehaviorSubject<boolean>(false);
   public formControl = new FormControl('');
+  private schema: string = '';
 
   constructor(
     private sectorsService: SectorsService,
     private readonly matDialog: MatDialog,
     private readonly notificationService: NotificationService,
-
+    private readonly authService: AuthService,
   ) { }
 
   ngOnInit(): void {
+    this.inicializarSchema();
     this.cargarInformacion();
   }
 
@@ -75,7 +78,12 @@ export class SectorsListComponent implements OnInit, AfterViewInit {
       this.formControl.value!,
       this.paginator?.pageIndex + 1 || 1, 
       this.paginator?.pageSize || 20,
+      this.schema
     );
+  }
+
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
   }
 
   public agregar() {
@@ -104,7 +112,7 @@ export class SectorsListComponent implements OnInit, AfterViewInit {
       if (response === true) {
         this.cargando$.next(true);
         this.sectorsService
-          .delete(sector.id)
+          .delete(sector.id, this.schema)
           .pipe(
             finalize(() => {
               this.cargando$.next(false);
@@ -145,10 +153,10 @@ export class SectorsDataSource implements DataSource<Sector> {
     this.cargandoInformacion$.complete();
   }
 
-  listarSectores(nombre: string, numeroPagina: number, totalPagina: number) {
+  listarSectores(nombre: string, numeroPagina: number, totalPagina: number, schema: string) {
     this.cargandoInformacion$.next(true);
     this.sectorsService
-      .getSectors(nombre, numeroPagina, totalPagina)
+      .getSectors(nombre, numeroPagina, totalPagina, schema)
       .pipe(
         finalize(() => {
           this.cargandoInformacion$.next(false);

@@ -10,3 +10,7 @@ mat-sidenav-container {
 mat-sidenav, mat-sidenav-content {
   transition: all 500ms ease-in-out;
 }
+
+.spacer {
+  flex: 1 1 auto;
+}

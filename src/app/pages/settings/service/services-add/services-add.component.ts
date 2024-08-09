@@ -13,6 +13,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { ServicesService } from '../../../../core/services/services.service';
+import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-services-add',
   standalone: true,
@@ -20,21 +21,31 @@ import { ServicesService } from '../../../../core/services/services.service';
   templateUrl: './services-add.component.html',
   styleUrl: './services-add.component.scss'
 })
-export class ServicesAddComponent {
+export class ServicesAddComponent implements OnInit{
   public cargando$ = new BehaviorSubject<boolean>(false);
   public serviceForm = this.crearFormulario();
+  private schema: string = '';
 
   constructor(
     private readonly servicesService: ServicesService,
     private readonly matDialogRef: MatDialogRef<ServicesAddComponent>,
+    private readonly authService: AuthService,
     @Inject(MAT_DIALOG_DATA) public data: { maxCode: number },
   ) {}
+
+  ngOnInit(): void {
+    this.inicializarSchema();
+  }
 
   private crearFormulario() {
     return new FormGroup({
       name: new FormControl('', [Validators.required]),
       measurementUnit: new FormControl('', [Validators.required]),
     });
+  }
+
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
   }
 
   public guardar() {
@@ -49,6 +60,7 @@ export class ServicesAddComponent {
           newCode,
           this.serviceForm.value.name!,
           this.serviceForm.value.measurementUnit!,
+          this.schema
         )
         .pipe(
           finalize(() => {

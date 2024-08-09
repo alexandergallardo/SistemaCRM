@@ -17,6 +17,10 @@ import { AccountsService } from '../../../../core/services/accounts.service';
 import { Sector } from '../../../../core/models/sector.models';
 import { MatSelectModule } from '@angular/material/select';
 import { ValidadorUrl } from '../../../../shared/validators/url.validator';
+import { AuthService } from '../../../../core/services/auth.service';
+import { User } from '../../../../core/models/users.models';
+import { EstadoGlobal, obtenerUsuario } from '../../../../core/reducers/estado-global.reducer';
+import { Store } from '@ngrx/store';
 
 @Component({
   selector: 'app-accounts-add',
@@ -29,15 +33,35 @@ export class AccountsAddComponent implements OnInit{
   public cargando$ = new BehaviorSubject<boolean>(false);
   public accountForm = this.crearFormulario();
   public sectors: Array<Sector> = [];
+  private schema: string = '';
 
   constructor(
     private readonly accountsService: AccountsService,
     private readonly sectorsService: SectorsService,
     private readonly matDialogRef: MatDialogRef<AccountsAddComponent>,
+    private readonly authService: AuthService,
+    private store: Store<EstadoGlobal>
   ) {}
 
   ngOnInit() {
+    this.inicializarSchema();
     this.listarSectores();
+    this.obtenerUsuario();
+  }
+
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
+  }
+
+  private obtenerUsuario() {
+    this.store.select(obtenerUsuario).subscribe((usuario) => {
+      if (usuario) {
+        console.log(usuario.id);
+        this.accountForm.patchValue({
+          salesAgentId: usuario.id
+        });
+      } else {console.log('gaaa')}
+    });
   }
 
   private crearFormulario() {
@@ -50,7 +74,7 @@ export class AccountsAddComponent implements OnInit{
       tradeName: new FormControl('', []),
       legalAddress: new FormControl('', []),
       description: new FormControl('', []),
-      salesAgentId: new FormControl(2, [Validators.required]),
+      salesAgentId: new FormControl<number | null>(null, [Validators.required]),
       website: new FormControl('', [ValidadorUrl]),
       facebook: new FormControl('', [ValidadorUrl]),
       instagram: new FormControl('', [ValidadorUrl]),
@@ -77,6 +101,7 @@ export class AccountsAddComponent implements OnInit{
           this.accountForm.value.facebook!,
           this.accountForm.value.instagram!,
           this.accountForm.value.linkedin!,
+          this.schema
         )
         .pipe(
           finalize(() => {
@@ -97,7 +122,7 @@ export class AccountsAddComponent implements OnInit{
 
         
   private listarSectores() {
-    this.sectorsService.getSectors('',1,100).subscribe((resultado) => {
+    this.sectorsService.getSectors('',1,100, this.schema).subscribe((resultado) => {
       this.sectors = resultado.data;
     });
   }

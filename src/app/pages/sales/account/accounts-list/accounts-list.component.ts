@@ -24,6 +24,7 @@ import { AccountsAddComponent } from '../accounts-add/accounts-add.component';
 import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-accounts-list',
   standalone: true,
@@ -41,17 +42,20 @@ export class AccountsListComponent implements OnInit {
   public filterForm = new FormGroup({
     document: new FormControl(''),
     companyName: new FormControl(''),
-    sector: new FormControl('')
+    sector: new FormControl(null)
   });
+  private schema: string = '';
 
   constructor(
     private readonly accountsService: AccountsService, 
     private readonly sectorsService: SectorsService,
     private readonly matDialog: MatDialog,
     private readonly notificationService: NotificationService,
+    private readonly authService: AuthService,
   ) { }
 
   ngOnInit(): void {
+    this.inicializarSchema();
     this.cargarInformacion();
     this.listarSectores();
   }
@@ -75,14 +79,19 @@ export class AccountsListComponent implements OnInit {
     this.dataSource.listarCuentas(
       document || '',
       companyName || '',
-      sector || '',
+      sector || null,
       this.paginator?.pageIndex + 1 || 1,
-      this.paginator?.pageSize || 20
+      this.paginator?.pageSize || 20,
+      this.schema
     );
   }
 
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
+  }
+
   private listarSectores() {
-    this.sectorsService.getSectors('', 1, 100).subscribe(response => {
+    this.sectorsService.getSectors('', 1, 100, this.schema).subscribe(response => {
       if (response.status === 200) {
         this.sectors = response.data;
       }
@@ -115,7 +124,7 @@ export class AccountsListComponent implements OnInit {
       if (response === true) {
         this.cargando$.next(true);
         this.accountsService
-          .delete(account.id)
+          .delete(account.id, this.schema)
           .pipe(
             finalize(() => {
               this.cargando$.next(false);
@@ -157,10 +166,10 @@ export class AccountsDataSource implements DataSource<Account> {
     this.cargandoInformacion$.complete();
   }
 
-  listarCuentas(document: string, companyName: string, sector: string, numeroPagina: number, totalPagina: number) {
+  listarCuentas(document: string, companyName: string, sector: number | null, numeroPagina: number, totalPagina: number, schema: string) {
     this.cargandoInformacion$.next(true);
     this.accountsService
-      .getAccounts(document, companyName, sector, numeroPagina, totalPagina)
+      .getAccounts(document, companyName, sector, numeroPagina, totalPagina, schema)
       .pipe(
         finalize(() => {
           this.cargandoInformacion$.next(false);

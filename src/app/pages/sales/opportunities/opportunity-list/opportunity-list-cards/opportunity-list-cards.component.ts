@@ -5,7 +5,6 @@ import { Opportunity } from '../../../../../core/models/opportunity.models';
 import { OpportunityCardComponent } from '../../opportunity-card/opportunity-card.component';
 import { SalesStage } from '../../../../../core/models/sales_stage.models';
 import { OportunitiesService } from '../../../../../core/services/opportunities.service';
-import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 
 @Component({
   selector: 'app-opportunity-list-cards',
@@ -19,6 +18,7 @@ import { trigger, transition, style, animate, query, stagger } from '@angular/an
 export class OpportunityListCardsComponent implements OnInit, OnChanges {
   @Input() oportunidades: Opportunity[] = [];
   @Input() listas: SalesStage[] = [];
+  @Input() schema: string = '';
   public oportunidadesMap: Map<number, Opportunity[]> = new Map<number, Opportunity[]>();
 
   constructor(private oportunitiesService: OportunitiesService) {}
@@ -48,7 +48,7 @@ export class OpportunityListCardsComponent implements OnInit, OnChanges {
           transferArrayItem(previousData, containerData, event.previousIndex, event.currentIndex);
           oportunidad.salesStageId = nuevaIdLista;
 
-          this.oportunitiesService.updateOpportunityStage(oportunidad.id, nuevaIdLista).subscribe({
+          this.oportunitiesService.updateOpportunityStage(oportunidad.id, nuevaIdLista, this.schema).subscribe({
             next: (response) => {
               console.log('Oportunidad actualizada exitosamente', response);
               oportunidad.salesStageId = nuevaIdLista;

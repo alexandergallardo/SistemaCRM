@@ -15,6 +15,7 @@ import { BehaviorSubject, finalize } from 'rxjs';
 import { Rol } from '../../../../core/models/rol.models';
 import { RolesService } from '../../../../core/services/roles.service';
 import { MatSelectModule } from '@angular/material/select';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-users-add',
@@ -26,15 +27,18 @@ import { MatSelectModule } from '@angular/material/select';
 export class UsersAddComponent implements OnInit {
   public cargando$ = new BehaviorSubject<boolean>(false);
   public userForm = this.crearFormulario();
+  private schema: string = '';
   public roles: Array<Rol> = [];
 
   constructor(
     private readonly usersService: UsersService,
     private readonly rolesService: RolesService,
+    private readonly authService: AuthService,
     private readonly matDialogRef: MatDialogRef<UsersAddComponent>,
   ) {}
 
   ngOnInit() {
+    this.inicializarSchema();
     this.listarRoles();
   }
 
@@ -48,6 +52,10 @@ export class UsersAddComponent implements OnInit {
     });
   }
 
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
+  }
+
   public guardar() {
     if (this.userForm.valid) {
       this.cargando$.next(true);
@@ -59,6 +67,7 @@ export class UsersAddComponent implements OnInit {
           this.userForm.value.email!,
           this.userForm.value.password!,
           this.userForm.value.rolId!,
+          this.schema
         )
         .pipe(
           finalize(() => {
@@ -78,7 +87,7 @@ export class UsersAddComponent implements OnInit {
   }
 
   private listarRoles() {
-    this.rolesService.getRoles('',1,20).subscribe((resultado) => {
+    this.rolesService.getRoles('',1,20, this.schema).subscribe((resultado) => {
       this.roles = resultado.data;
     });
   }

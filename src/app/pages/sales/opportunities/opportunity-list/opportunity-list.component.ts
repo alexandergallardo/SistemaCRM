@@ -17,6 +17,7 @@ import { SalesStageService } from '../../../../core/services/sales-stage.service
 import { OpportunityAddComponent } from '../opportunity-add/opportunity-add.component';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
     selector: 'app-opportunities',
@@ -32,15 +33,18 @@ export class OpportunityListComponent implements OnInit, AfterViewInit {
   public oportunidades: Opportunity[] = [];
   public totalRegistros!: number;
   public listas: SalesStage[] = [];
+  public schema: string = '';
 
   constructor(
     private readonly oportunitiesService: OportunitiesService,
     private readonly matDialog: MatDialog,
     private readonly salesStageService: SalesStageService,
     private readonly notificationService: NotificationService,
+    private readonly authService: AuthService,
   ) {}
 
   ngOnInit(): void {
+    this.inicializarSchema();
     this.obtenerEtapasDeVenta();
     this.listarOportunidades();
   }
@@ -60,8 +64,12 @@ export class OpportunityListComponent implements OnInit, AfterViewInit {
     }
   }
 
+  private inicializarSchema() {
+    this.schema = this.authService.getSchema() || '';
+  }
+  
   private obtenerEtapasDeVenta(): void {
-    this.salesStageService.getSalesStage(1, 10).subscribe({
+    this.salesStageService.getSalesStages(1, 10, this.schema).subscribe({
       next: (respuesta) => {
         this.listas = respuesta.data;
       },
@@ -78,6 +86,7 @@ export class OpportunityListComponent implements OnInit, AfterViewInit {
       .getOportunities(
         this.paginator?.pageIndex + 1 || 1,
         this.paginator?.pageSize || 10,
+        this.schema
       )
       .pipe(
         finalize(() => {

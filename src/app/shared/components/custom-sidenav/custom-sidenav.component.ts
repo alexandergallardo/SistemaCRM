@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, computed, signal } from '@angular/core';
+import { Component, Input, OnInit, computed, signal } from '@angular/core';
 import { MatListModule } from '@angular/material/list'
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from '../../../core/models/menuItem.models';
 import { MenuItemComponent } from "./menu-item/menu-item.component";
+import { User } from '../../../core/models/users.models';
+import { EstadoGlobal, obtenerUsuario } from '../../../core/reducers/estado-global.reducer';
+import { Store } from '@ngrx/store';
 
 @Component({
     selector: 'app-custom-sidenav',
@@ -13,7 +16,23 @@ import { MenuItemComponent } from "./menu-item/menu-item.component";
     styleUrl: './custom-sidenav.component.scss',
     imports: [CommonModule, MatListModule, MatIconModule, RouterModule, MenuItemComponent]
 })
-export class CustomSidenavComponent {
+export class CustomSidenavComponent implements OnInit{
+  public usuarioActual: User | null = null;
+
+  constructor(
+    private store: Store<EstadoGlobal>
+  ) {}
+
+  ngOnInit() {
+    this.obtenerUsuario();
+  }
+
+  private obtenerUsuario() {
+    this.store.select(obtenerUsuario).subscribe((usuario) => {
+      this.usuarioActual = usuario;
+    });
+  }
+
   sideNavCollapsed = signal(false);
   @Input() set collapsed(val: boolean) {
     this.sideNavCollapsed.set(val);

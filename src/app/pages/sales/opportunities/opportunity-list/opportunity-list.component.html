@@ -32,8 +32,8 @@
     <div class="spinner-container" *ngIf="cargando$ | async">
       <mat-spinner></mat-spinner>
     </div>
-    <app-opportunity-list-cards *ngIf="selectedView === 'cards'" [oportunidades]="oportunidades" [listas]="listas"></app-opportunity-list-cards>
-    <app-opportunity-list-table *ngIf="selectedView === 'tabla'" [oportunidades]="oportunidades" [totalRegistros]="totalRegistros"></app-opportunity-list-table>
+    <app-opportunity-list-cards *ngIf="selectedView === 'cards'" [oportunidades]="oportunidades" [listas]="listas" [schema]="schema"></app-opportunity-list-cards>
+    <app-opportunity-list-table *ngIf="selectedView === 'tabla'" [oportunidades]="oportunidades" [totalRegistros]="totalRegistros" [schema]="schema"></app-opportunity-list-table>
   </mat-card-content>
 </mat-card>
   
