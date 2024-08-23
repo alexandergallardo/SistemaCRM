@@ -1,4 +1,4 @@
-<div class="tarea" id="oportunidad_{{ oportunidad.id }}">
+<div class="tarea" id="oportunidad_{{ oportunidad.id }}" (click)="editar(oportunidad)">
   <h3>{{ oportunidad.accountName }}</h3>
   <p class="tarea__precio texto_primary">{{ oportunidad.currency }} {{ oportunidad.baseAmount | number:''}}</p>
   <div class="tarea__servicio-trabajador">

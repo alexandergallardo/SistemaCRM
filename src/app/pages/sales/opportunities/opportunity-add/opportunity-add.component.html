@@ -1,6 +1,6 @@
 <mat-card class="card-emergente">
   <mat-toolbar color="primary">
-    Nueva oportunidad
+    {{ this.data.tipo_vista === 'editar' ? 'Actualizar oportunidad' : 'Nueva oportunidad' }}
     <span class="espacio"> </span>
     <button mat-icon-button type="button" (click)="cerrarVentana()">
       <mat-icon> close </mat-icon>
@@ -12,6 +12,13 @@
       <mat-spinner></mat-spinner>
     </div>
     <mat-card-content>
+      <div class="barra-estado" *ngIf="this.data.tipo_vista === 'editar'">
+        <ng-container *ngFor="let etapa of etapas">
+          <div class="etapa" [class.completada]="etapa.position <= etapaActual!.position">
+            {{ etapa.name }}
+          </div>
+        </ng-container>
+      </div>
       <mat-grid-list cols="3" rowHeight="70px">
         <mat-grid-tile colspan="1">
           <mat-form-field class="columnas-1">
@@ -77,6 +84,23 @@
           </mat-form-field>
         </mat-grid-tile>
       </mat-grid-list>
+      <div style="text-align: center" *ngIf="this.data.tipo_vista === 'editar'">
+        <button mat-button color="accent" (click)="onToggleChange()">
+          {{ mostrarTabs ? 'Mostrar menos' : 'Mostrar más' }}
+          <mat-icon> {{ mostrarTabs ? 'remove' : 'add' }} </mat-icon>
+        </button>
+      </div>
+      <mat-tab-group *ngIf="this.data.tipo_vista === 'editar' && mostrarTabs">
+        <mat-tab label="Comentarios">
+          <app-opportunity-comments [opportunity]="data.opportunity!"></app-opportunity-comments>
+        </mat-tab>
+        <mat-tab label="Documentos">
+          <app-opportunity-documents [opportunity]="data.opportunity!"></app-opportunity-documents>
+        </mat-tab>
+        <mat-tab label="Contactos">
+          <app-opportunity-contacts [opportunity]="data.opportunity!"></app-opportunity-contacts>
+        </mat-tab>
+      </mat-tab-group>
     </mat-card-content>
     <mat-card-actions>
       <button

@@ -1,39 +1,44 @@
 <mat-toolbar>
-  <mat-toolbar-row> Listado de oportunidades</mat-toolbar-row>
+  <mat-toolbar-row>Listado de oportunidades</mat-toolbar-row>
 </mat-toolbar>
 
-<button mat-fab color="accent" class="derecha" (click)="agregar()" matTooltip="Crear oportunidad">
-  <mat-icon> add </mat-icon>
-</button>
+<ng-container *ngIf="!configurandoEtapas; else configuracionEtapas">
+  <button mat-fab color="accent" class="derecha" (click)="agregar()" matTooltip="Crear oportunidad">
+    <mat-icon>add</mat-icon>
+  </button>
 
-<button mat-fab 
-  color="accent" 
-  class="derecha" 
-  [matMenuTriggerFor]="menuVista" 
-  matTooltip="Mostrar como">
-  <mat-icon>{{ selectedView === 'table' ? 'table_chart' : 'view_module' }}</mat-icon>
+  <button mat-fab 
+    color="accent" 
+    class="derecha" 
+    [matMenuTriggerFor]="menuVista" 
+    matTooltip="Mostrar como">
+    <mat-icon>{{ selectedView === 'table' ? 'table_chart' : 'view_module' }}</mat-icon>
 
-  <mat-menu #menuVista="matMenu">
-    <button mat-menu-item (click)="selectView('cards')">
-      <mat-icon>view_module</mat-icon> Cards
-    </button>
-    <button mat-menu-item (click)="selectView('tabla')">
-      <mat-icon>table_chart</mat-icon> Tabla
-    </button>
-  </mat-menu>
-</button>
+    <mat-menu #menuVista="matMenu">
+      <button mat-menu-item (click)="selectView('cards')">
+        <mat-icon>view_module</mat-icon> Cards
+      </button>
+      <button mat-menu-item (click)="selectView('tabla')">
+        <mat-icon>table_chart</mat-icon> Tabla
+      </button>
+    </mat-menu>
+  </button>
 
-<button mat-fab color="accent" class="derecha">
-  <mat-icon> cloud_download </mat-icon>
-</button>
+  <button mat-fab color="accent" class="derecha">
+    <mat-icon>cloud_download</mat-icon>
+  </button>
 
-<mat-card class="card">
-  <mat-card-content>
-    <div class="spinner-container" *ngIf="cargando$ | async">
-      <mat-spinner></mat-spinner>
-    </div>
-    <app-opportunity-list-cards *ngIf="selectedView === 'cards'" [oportunidades]="oportunidades" [listas]="listas" [schema]="schema"></app-opportunity-list-cards>
-    <app-opportunity-list-table *ngIf="selectedView === 'tabla'" [oportunidades]="oportunidades" [totalRegistros]="totalRegistros" [schema]="schema"></app-opportunity-list-table>
-  </mat-card-content>
-</mat-card>
-  
+  <mat-card class="card">
+    <mat-card-content>
+      <div class="spinner-container" *ngIf="cargando$ | async">
+        <mat-spinner></mat-spinner>
+      </div>
+      <app-opportunity-list-cards *ngIf="selectedView === 'cards'" [oportunidades]="oportunidades" [listas]="listas" [schema]="schema"></app-opportunity-list-cards>
+      <app-opportunity-list-table *ngIf="selectedView === 'tabla'" [oportunidades]="oportunidades" [totalRegistros]="totalRegistros" [schema]="schema"></app-opportunity-list-table>
+    </mat-card-content>
+  </mat-card>
+</ng-container>
+
+<ng-template #configuracionEtapas>
+  <app-sales-stage (etapasGuardadas)="onEtapasGuardadas()"></app-sales-stage>
+</ng-template>

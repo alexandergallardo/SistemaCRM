@@ -119,4 +119,19 @@ export class SalesStageService {
       }),
     );
   }
+
+  public createMultiple(etapas: { name: string; position: number; schema: string }[]): Observable<void> {
+    const headers = this.httpUtilsService.getHeaders();
+
+    return this.httpClient.post<void>(
+      `${environment.apiBaseUrl}/sales/sales-stage/multiple`, 
+      etapas, 
+      { headers }
+    ).pipe(
+      catchError((error) => {
+        console.error('Error al crear las etapas de venta:', error);
+        return throwError(() => new Error('Error al crear las etapas de venta'));
+      }),
+    );
+  }
 }

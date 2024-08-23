@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -37,6 +37,7 @@ export class LeadsAddComponent implements AfterViewInit, OnInit {
   private attributeIds: { [key: string]: number } = {};
 
   constructor(
+    @Inject(MAT_DIALOG_DATA) public data: InformacionVentanaLeads,
     private readonly personService: PersonService,
     private readonly accountsService: AccountsService,
     private readonly matDialogRef: MatDialogRef<LeadsAddComponent>,
@@ -49,6 +50,9 @@ export class LeadsAddComponent implements AfterViewInit, OnInit {
     this.listarClientes();
     this.cargarAttributeIds();
     this.obtenerUsuario();
+    if (this.data.tipo_vista === 'editar') {
+      this.asignarInformacion(this.data.lead!);
+    }
   }
 
   ngAfterViewInit() {
@@ -79,8 +83,8 @@ export class LeadsAddComponent implements AfterViewInit, OnInit {
     return new FormGroup({
       name: new FormControl('', [Validators.required]),
       position: new FormControl('', [Validators.required]),
-      email: new FormControl('', []),
-      mobile: new FormControl(null, [Validators.required]),
+      email: new FormControl('', [Validators.email, Validators.required]),
+      mobile: new FormControl('', [Validators.required]),
       accountId: new FormControl<number | null>(null, []),
       personType: new FormControl('lead', [Validators.required]),
       salesAgentId: new FormControl<number | null>(null, [Validators.required]),
@@ -89,6 +93,18 @@ export class LeadsAddComponent implements AfterViewInit, OnInit {
       leadSource: new FormControl('', []),
       leadRating: new FormControl('', []),
     });
+  }
+
+  private asignarInformacion(informacion: Lead) {
+    this.leadForm.get('name')?.setValue(informacion.name);
+    this.leadForm.get('position')?.setValue(informacion.position);
+    this.leadForm.get('email')?.setValue(informacion.email);
+    this.leadForm.get('mobile')?.setValue(informacion.mobile);
+    this.leadForm.get('accountId')?.setValue(informacion.accountId);
+    this.leadForm.get('accountName')?.setValue(informacion.accountName);
+    this.leadForm.get('leadStatus')?.setValue(informacion.leadStatus);
+    this.leadForm.get('leadSource')?.setValue(informacion.leadSource);
+    this.leadForm.get('leadRating')?.setValue(informacion.leadRating);
   }
 
   private cargarAttributeIds() {
@@ -120,7 +136,7 @@ export class LeadsAddComponent implements AfterViewInit, OnInit {
     this.listarCliente('');
   }
 
-  public guardar() {
+  private crear() {
     if (this.leadForm.valid) {
       this.cargando$.next(true);
 
@@ -170,6 +186,65 @@ export class LeadsAddComponent implements AfterViewInit, OnInit {
     }
   }
 
+  private actualizar() {
+    if (this.leadForm.valid) {
+      this.cargando$.next(true);
+
+      if (!this.attributeIds || Object.keys(this.attributeIds).length === 0) {
+        console.error('No se han asignado IDs de atributos. Revisa la carga de IDs.');
+        return;
+      }
+
+      const customAttributes: CustomAttribute[] = [
+        { attributeId: this.attributeIds['Estado del lead'], value: this.leadForm.value.leadStatus as string },
+        { attributeId: this.attributeIds['Fuente del lead'], value: this.leadForm.value.leadSource as string },
+        { attributeId: this.attributeIds['Valoracion del lead'], value: this.leadForm.value.leadRating as string },
+      ].filter(attr => attr.value !== null && attr.value !== undefined && attr.value !== '') as CustomAttribute[];
+
+
+      if (customAttributes.length === 0) {
+        console.error('No se han asignado valores válidos para los atributos.');
+        return;
+      }
+
+      this.personService
+        .update(
+          this.data.lead!.id,
+          this.leadForm.value.name!.toUpperCase(),
+          this.leadForm.value.position!.toUpperCase(),
+          this.leadForm.value.email!,
+          this.leadForm.value.mobile!,
+          this.leadForm.value.accountId!,
+          this.leadForm.value.personType!,
+          this.leadForm.value.salesAgentId!,
+          customAttributes as CustomAttribute[],
+          this.schema
+        )
+        .pipe(
+          finalize(() => {
+            this.cargando$.next(false);
+          })
+        )
+        .subscribe({
+          next: (response) => {
+            this.matDialogRef.close(true);
+          },
+          error: (error) => {
+            console.error('Error al guardar lead:', error);
+            this.matDialogRef.close(false);
+          }
+        });
+    }
+  }
+
+  public guardar() {
+    if (this.data.tipo_vista === 'editar') {
+      this.actualizar();
+    } else {
+      this.crear();
+    }
+  }
+        
   private inicializarSchema() {
     this.schema = this.authService.getSchema() || '';
   }
@@ -184,3 +259,8 @@ export class LeadsAddComponent implements AfterViewInit, OnInit {
     this.matDialogRef.close();
   }
 }
+
+export type InformacionVentanaLeads = {
+  tipo_vista: 'crear' | 'editar';
+  lead?: Lead;
+};

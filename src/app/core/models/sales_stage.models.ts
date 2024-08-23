@@ -1,5 +1,5 @@
 export type SalesStage = {
-  id: number;
+  id?: number;
   name: string;
-  position: string;
+  position: number;
 }

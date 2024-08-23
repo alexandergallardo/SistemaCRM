@@ -3,6 +3,7 @@ export type Account = {
   document: string;
   companyName: string;
   businessGroup: string;
+  sectorId: number;
   sectorName: string;
   numberOfEmployees: number;
   tradeName: string;

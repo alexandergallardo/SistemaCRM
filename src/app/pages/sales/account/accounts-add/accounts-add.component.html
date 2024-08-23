@@ -1,6 +1,6 @@
 <mat-card class="card-emergente">
   <mat-toolbar color="primary">
-    Nueva cuenta
+    {{ this.data.tipo_vista === 'editar' ? 'Actualizar cuenta' : 'Nueva cuenta' }}
     <span class="espacio"> </span>
     <button mat-icon-button type="button" (click)="cerrarVentana()">
       <mat-icon> close </mat-icon>

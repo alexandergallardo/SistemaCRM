@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Inject, Input } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,30 +23,45 @@ import { OportunitiesService } from '../../../../core/services/opportunities.ser
 import { AuthService } from '../../../../core/services/auth.service';
 import { EstadoGlobal, obtenerUsuario } from '../../../../core/reducers/estado-global.reducer';
 import { Store } from '@ngrx/store';
+import { OpportunityCommentsComponent } from "../opportunity-comments/opportunity-comments/opportunity-comments.component";
+import { OpportunityDocumentsComponent } from "../opportunity-documents/opportunity-documents/opportunity-documents.component";
+import { OpportunityContactsComponent } from "../opportunity-contacts/opportunity-contacts/opportunity-contacts.component";
+import {MatTabsModule} from '@angular/material/tabs';
+import { Opportunity } from '../../../../core/models/opportunity.models';
+import { SalesStageService } from '../../../../core/services/sales-stage.service';
+import { SalesStage } from '../../../../core/models/sales_stage.models';
 
 @Component({
   selector: 'app-opportunity-add',
   standalone: true,
-  imports: [MatInputModule, MatAutocompleteModule, MatSelectModule, MatButtonModule, ReactiveFormsModule, MatFormFieldModule, CommonModule, MatCardModule, MatToolbarModule, MatIconModule, MatProgressSpinnerModule, MatGridListModule],
+  imports: [MatInputModule, MatAutocompleteModule, MatTabsModule, MatSelectModule, MatButtonModule, ReactiveFormsModule, MatFormFieldModule, CommonModule, MatCardModule, MatToolbarModule, MatIconModule, MatProgressSpinnerModule, MatGridListModule, OpportunityCommentsComponent, OpportunityDocumentsComponent, OpportunityContactsComponent],
   templateUrl: './opportunity-add.component.html',
   styleUrl: './opportunity-add.component.scss'
 })
 export class OpportunityAddComponent {
+  @Input() opportunity!: Opportunity ;
   public cargando$ = new BehaviorSubject<boolean>(false);
   public opportunityForm = this.crearFormulario();
   public contacts: Array<Contact> = [];
   public accounts: Array<Account> = [];
   public services: Array<Service> = [];
   private schema: string = '';
-  
+  public mostrarTabs = false;
+  public etapas: SalesStage[] = [];
+  public titulo: string = '';
+  private primeraEtapa: number | null = null;
+  public etapaActual: SalesStage | undefined;
+
   constructor(
+    @Inject(MAT_DIALOG_DATA) public data: InformacionVentanaOportunidad,
     private readonly personService: PersonService,
     private readonly accountsService: AccountsService,
     private readonly serviceService: ServicesService,
     private readonly oportunitiesService: OportunitiesService,
     private readonly matDialogRef: MatDialogRef<OpportunityAddComponent>,
     private readonly authService: AuthService,
-    private store: Store<EstadoGlobal>
+    private store: Store<EstadoGlobal>,
+    private readonly salesStageService: SalesStageService
   ) {}
 
   ngOnInit() {
@@ -54,6 +69,11 @@ export class OpportunityAddComponent {
     this.listarClientes();
     this.listarServicios();
     this.obtenerUsuario();
+    this.obtenerEtapas();
+    if (this.data.tipo_vista === 'editar') {
+      this.asignarInformacion(this.data.opportunity!);
+      this.opportunityForm.get('contactName')!.enable();
+    }
   }
 
   private crearFormulario() {
@@ -65,14 +85,50 @@ export class OpportunityAddComponent {
       baseAmount: new FormControl<number | null>(null, []),
       serviceId: new FormControl<number | null>(null, []),
       salesAgentId: new FormControl<number | null>(null, []),
-      salesStageId: new FormControl<number | null>(1, []),
+      salesStageId: new FormControl<number | null>(null, []),
       accountName: new FormControl('', []),
       contactName: new FormControl({ value: '', disabled: true }, []),
+      serviceName: new FormControl('', []),
     })
+  }
+
+  private asignarInformacion(informacion: Opportunity) {
+    this.opportunityForm.get('accountId')?.setValue(informacion.accountId);
+    this.opportunityForm.get('personId')?.setValue(informacion.personId);
+    this.opportunityForm.get('probability')?.setValue(informacion.probability);
+    this.opportunityForm.get('baseAmount')?.setValue(informacion.baseAmount);
+    this.opportunityForm.get('serviceId')?.setValue(informacion.serviceId);
   }
 
   private inicializarSchema() {
     this.schema = this.authService.getSchema() || '';
+  }
+
+  public onToggleChange() {
+    this.mostrarTabs = !this.mostrarTabs;
+  }
+
+  private obtenerEtapas() {
+    this.salesStageService.getSalesStages(1, 20, this.schema).subscribe({
+      next: (respuesta) => {
+        this.etapas = respuesta.data.sort((a, b) => a.position - b.position);
+        const stage = this.etapas.find(etapa => etapa.position === 1);
+        if (stage && stage.id !== undefined) {
+          this.primeraEtapa = stage.id;
+        } else {
+          console.warn('No se encontró una etapa de ventas con posición 1.');
+          this.primeraEtapa = null;
+        }
+
+        this.etapaActual = this.etapas.find(etapa => etapa.id === this.data.opportunity!.salesStageId);
+        if (!this.etapaActual) {
+          console.warn('No se encontró la etapa de ventas actual para la oportunidad.');
+        }
+      },
+      error: (error) => {
+        console.error('Error al obtener las etapas de ventas:', error);
+      }
+    });
   }
 
   private obtenerUsuario() {
@@ -132,8 +188,14 @@ export class OpportunityAddComponent {
     });
   }
 
-  public guardar() {
+  private crear() {
     if (this.opportunityForm.valid) {
+      if (this.primeraEtapa) {
+        this.opportunityForm.get('salesStageId')!.setValue(this.primeraEtapa);
+      } else {
+        console.error('No se puede guardar la oportunidad porque no se encontró una etapa de ventas con posición 1.');
+        return;
+      }
       this.cargando$.next(true);
 
       this.oportunitiesService
@@ -142,7 +204,7 @@ export class OpportunityAddComponent {
           this.opportunityForm.value.personId!,
           this.opportunityForm.value.probability!,
           this.opportunityForm.value.currency!,
-          this.opportunityForm.value.baseAmount!,
+          Number(this.opportunityForm.value.baseAmount!),
           this.opportunityForm.value.serviceId!,
           this.opportunityForm.value.salesAgentId!,
           this.opportunityForm.value.salesStageId!,
@@ -164,7 +226,59 @@ export class OpportunityAddComponent {
     }
   }
 
+  private actualizar() {
+    if (this.opportunityForm.valid) {
+      if (this.primeraEtapa) {
+        this.opportunityForm.get('salesStageId')!.setValue(this.primeraEtapa);
+      } else {
+        console.error('No se puede guardar la oportunidad porque no se encontró una etapa de ventas con posición 1.');
+        return;
+      }
+      this.cargando$.next(true);
+
+      this.oportunitiesService
+        .update(
+          this.data.opportunity!.id,
+          this.opportunityForm.value.accountId!,
+          this.opportunityForm.value.personId!,
+          this.opportunityForm.value.probability!,
+          this.opportunityForm.value.currency!,
+          Number(this.opportunityForm.value.baseAmount!),
+          this.opportunityForm.value.serviceId!,
+          this.opportunityForm.value.salesAgentId!,
+          this.opportunityForm.value.salesStageId!,
+          this.schema
+        )
+        .pipe(
+          finalize(() => {
+            this.cargando$.next(false);
+          })
+        )
+        .subscribe({
+          next: (response) => {
+            this.matDialogRef.close(true);
+          },
+          error: (error) => {
+            console.error('Error al guardar oportunidad:', error);
+           this.matDialogRef.close(false);          }
+        });
+    }
+  }
+
+  public guardar() {
+    if (this.data.tipo_vista === 'editar') {
+      this.actualizar();
+    } else {
+      this.crear();
+    }
+  }
+
   public cerrarVentana() {
     this.matDialogRef.close();
   }
 }
+
+export type InformacionVentanaOportunidad = {
+  tipo_vista: 'ver' | 'editar';
+  opportunity?: Opportunity;
+};

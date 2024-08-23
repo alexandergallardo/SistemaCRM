@@ -15,7 +15,7 @@ import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, finali
 import { UsersService } from '../../../../core/services/users.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
-import { UsersAddComponent } from '../users-add/users-add.component';
+import { InformacionVentanaUsuarios, UsersAddComponent } from '../users-add/users-add.component';
 import { DataSource } from '@angular/cdk/collections';
 import { IRespuestaHttpEstandar } from '../../../../core/models/http.models';
 import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
@@ -92,6 +92,7 @@ export class UsersListComponent implements OnInit, AfterViewInit {
     const ventana = this.matDialog.open(UsersAddComponent, {
       maxHeight: '90vh',
       width: '900px',
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((response) => {
@@ -104,10 +105,33 @@ export class UsersListComponent implements OnInit, AfterViewInit {
     });
   }
 
+  public editar(user: User) {
+    const informacion: InformacionVentanaUsuarios = {
+      tipo_vista: 'editar',
+      user,
+    }
+    const Ventana = this.matDialog.open(UsersAddComponent, {
+      width: '900px',
+      data: informacion,
+      disableClose: true,
+    });
+
+    Ventana.afterClosed().subscribe((res: boolean) => {
+      if (res) {
+        this.notificationService.Snack('Se actualizó al usuario con éxito', '');
+        this.cargarInformacion();
+      }
+      if (res === false) {
+        this.notificationService.Snack('Ocurrió un error al actualizar al usuario', '');
+      }
+    });
+  }
+
   public eliminar(user: User) {
     const ventana = this.matDialog.open(DeleteWindowComponent, {
       width: '600px',
       data: { object: 'el usuario', value: user.name },
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((response) => {

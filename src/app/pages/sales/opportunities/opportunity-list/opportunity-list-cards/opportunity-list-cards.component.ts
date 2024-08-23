@@ -5,6 +5,7 @@ import { Opportunity } from '../../../../../core/models/opportunity.models';
 import { OpportunityCardComponent } from '../../opportunity-card/opportunity-card.component';
 import { SalesStage } from '../../../../../core/models/sales_stage.models';
 import { OportunitiesService } from '../../../../../core/services/opportunities.service';
+import { SalesStageService } from '../../../../../core/services/sales-stage.service';
 
 @Component({
   selector: 'app-opportunity-list-cards',
@@ -20,10 +21,12 @@ export class OpportunityListCardsComponent implements OnInit, OnChanges {
   @Input() listas: SalesStage[] = [];
   @Input() schema: string = '';
   public oportunidadesMap: Map<number, Opportunity[]> = new Map<number, Opportunity[]>();
+  private posicionIdMap: Map<number, number> = new Map<number, number>();
 
-  constructor(private oportunitiesService: OportunitiesService) {}
+  constructor(private readonly oportunitiesService: OportunitiesService, private readonly salesStageService: SalesStageService) {}
 
   ngOnInit(): void {
+    this.obtenerEtapas();
     this.agruparOportunidadesPorIdLista();
   }
 
@@ -38,31 +41,49 @@ export class OpportunityListCardsComponent implements OnInit, OnChanges {
       const previousData = event.previousContainer.data || [];
       const containerData = event.container.data || [];
 
-      
-
         if ('length' in previousData && 'length' in containerData) {
           transferArrayItem(previousData, containerData, event.previousIndex, event.currentIndex);
           const oportunidad = containerData[event.currentIndex];
-          const nuevaIdLista = +event.container.id;
-  
-          transferArrayItem(previousData, containerData, event.previousIndex, event.currentIndex);
-          oportunidad.salesStageId = nuevaIdLista;
+          const nuevaPosition = +event.container.id;
+          const nuevaIdLista = this.posicionIdMap.get(nuevaPosition);
 
-          this.oportunitiesService.updateOpportunityStage(oportunidad.id, nuevaIdLista, this.schema).subscribe({
-            next: (response) => {
-              console.log('Oportunidad actualizada exitosamente', response);
-              oportunidad.salesStageId = nuevaIdLista;
-              this.agruparOportunidadesPorIdLista();
-            },
-            error: (error) => {
-              console.error('Error al actualizar la oportunidad', error);
-              transferArrayItem(containerData, previousData, event.currentIndex, event.previousIndex);
-            oportunidad.salesStageId = +event.previousContainer.id;
-            }
-          });
+          if (nuevaIdLista !== undefined) {
+            oportunidad.salesStageId = nuevaIdLista;
+    
+            this.oportunitiesService.updateOpportunityStage(oportunidad.id, nuevaIdLista, this.schema).subscribe({
+              next: (response) => {
+                console.log('Oportunidad actualizada exitosamente', response);
+                oportunidad.salesStageId = nuevaIdLista;
+                this.agruparOportunidadesPorIdLista();
+              },
+              error: (error) => {
+                console.error('Error al actualizar la oportunidad', error);
+                transferArrayItem(containerData, previousData, event.currentIndex, event.previousIndex);
+                oportunidad.salesStageId = +event.previousContainer.id;
+              }
+            });
+          } else {
+            console.error('No se encontró un ID de etapa de ventas correspondiente a la posición', nuevaPosition);
+            transferArrayItem(containerData, previousData, event.currentIndex, event.previousIndex);
+          }
         }
       
     }
+  }
+
+  private obtenerEtapas() {
+    this.salesStageService.getSalesStages(1, 20, this.schema).subscribe({
+      next: (respuesta) => {
+        this.listas = respuesta.data.sort((a, b) => a.position - b.position);
+        
+        this.listas.forEach(lista => {
+          this.posicionIdMap.set(lista.position, lista.id!);
+        });
+      },
+      error: (error) => {
+        console.error('Error al obtener las etapas de ventas:', error);
+      }
+    });
   }
 
   private agruparOportunidadesPorIdLista(): void {

@@ -1,0 +1,162 @@
+<mat-card class="card-emergente">
+  <mat-toolbar color="primary">
+    Nuevo rol del sistema
+    <span class="espacio"> </span>
+    <button mat-icon-button type="button" (click)="cerrarVentana()">
+      <mat-icon> close </mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <form [formGroup]="roleForm">
+    <mat-card-content>
+      <mat-grid-list cols="1" rowHeight="70px">
+        <mat-grid-tile>
+          <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Nombre del Rol</mat-label>
+            <input matInput formControlName="name" placeholder="Ej. Administrador" />
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+
+      <!-- Sales Permissions -->
+      <mat-card-title class="section-title">Ventas</mat-card-title>
+      <mat-grid-list cols="5" rowHeight="40px">
+        <mat-grid-tile><strong>Módulo</strong></mat-grid-tile>
+        <mat-grid-tile *ngFor="let opcion of opcionesPermiso">
+          <strong>{{ opcion.nombre }}</strong>
+        </mat-grid-tile>
+        <div formGroupName="sales">
+          <mat-grid-tile>Cuentas</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="accounts" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+          <mat-grid-tile>Contactos</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="contacts" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+          <mat-grid-tile>Oportunidades</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="opportunities" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+        </div>
+      </mat-grid-list>
+
+      <!-- Marketing Permissions -->
+      <mat-card-title class="section-title">Marketing</mat-card-title>
+      <mat-grid-list cols="5" rowHeight="40px">
+        <mat-grid-tile><strong>Módulo</strong></mat-grid-tile>
+        <mat-grid-tile *ngFor="let opcion of opcionesPermiso">
+          <strong></strong>
+        </mat-grid-tile>
+        <div formGroupName="marketing">
+          <mat-grid-tile>Leads</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="leads" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+          <mat-grid-tile>Campañas</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="campaigns" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+        </div>
+      </mat-grid-list>
+
+      <!-- Reports Permissions -->
+      <mat-card-title class="section-title">Reportes</mat-card-title>
+      <mat-grid-list cols="5" rowHeight="40px">
+        <mat-grid-tile><strong>Módulo</strong></mat-grid-tile>
+        <mat-grid-tile *ngFor="let opcion of opcionesPermiso">
+          <strong></strong>
+        </mat-grid-tile>
+        <div formGroupName="reports">
+          <mat-grid-tile>Gráficos</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="charts" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+          <mat-grid-tile>Calendario</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="calendar" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+        </div>
+      </mat-grid-list>
+
+      <!-- Settings Permissions -->
+      <mat-card-title class="section-title">Configuración</mat-card-title>
+      <mat-grid-list cols="5" rowHeight="40px">
+        <mat-grid-tile><strong>Módulo</strong></mat-grid-tile>
+        <mat-grid-tile *ngFor="let opcion of opcionesPermiso">
+          <strong></strong>
+        </mat-grid-tile>
+        <div formGroupName="settings">
+          <mat-grid-tile>Sectores</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="sectors" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+          <mat-grid-tile>Servicios</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="services" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+        </div>
+      </mat-grid-list>
+
+      <!-- Users Permissions -->
+      <mat-card-title class="section-title">Usuarios</mat-card-title>
+      <mat-grid-list cols="5" rowHeight="40px">
+        <mat-grid-tile><strong>Módulo</strong></mat-grid-tile>
+        <mat-grid-tile *ngFor="let opcion of opcionesPermiso">
+          <strong></strong>
+        </mat-grid-tile>
+        <div formGroupName="users">
+          <mat-grid-tile>Usuarios</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="users" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+        </div>
+      </mat-grid-list>
+
+      <!-- Information Permissions -->
+      <mat-card-title class="section-title">Información</mat-card-title>
+      <mat-grid-list cols="5" rowHeight="40px">
+        <mat-grid-tile><strong>Módulo</strong></mat-grid-tile>
+        <mat-grid-tile *ngFor="let opcion of opcionesPermiso">
+          <strong></strong>
+        </mat-grid-tile>
+        <div formGroupName="information">
+          <mat-grid-tile>Información</mat-grid-tile>
+          <mat-grid-tile colspan="4">
+            <mat-radio-group formControlName="information" class="radio-group">
+              <mat-radio-button *ngFor="let opcion of opcionesPermiso" [value]="opcion.valor"></mat-radio-button>
+            </mat-radio-group>
+          </mat-grid-tile>
+        </div>
+      </mat-grid-list>
+    </mat-card-content>
+  </form>
+  <mat-card-actions>
+    <button 
+      mat-raised-button
+      type="button" 
+      color="primary" 
+      (click)="guardar()"
+      >Guardar</button>
+  </mat-card-actions>
+</mat-card>

@@ -17,10 +17,11 @@ import { BehaviorSubject, Observable, debounceTime, distinctUntilChanged, finali
 import { PersonService } from '../../../../core/services/person.service';
 import { IRespuestaHttpEstandar } from '../../../../core/models/http.models';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LeadsAddComponent } from '../leads-add/leads-add.component';
+import { InformacionVentanaLeads, LeadsAddComponent } from '../leads-add/leads-add.component';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
 
 @Component({
   selector: 'app-leads-list',
@@ -92,6 +93,7 @@ export class LeadsListComponent implements OnInit {
     const ventana = this.matDialog.open(LeadsAddComponent, {
       maxHeight: '90vh',
       width: '900px',
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((response) => {
@@ -106,6 +108,63 @@ export class LeadsListComponent implements OnInit {
   
   public getDetails(leadId: string) {
     this.router.navigate([leadId], { relativeTo: this.activatedReoute });
+  }
+
+  public editar(lead: Lead) {
+    const informacion: InformacionVentanaLeads = {
+      tipo_vista: 'editar',
+      lead,
+    }
+    const Ventana = this.matDialog.open(LeadsAddComponent, {
+      width: '900px',
+      data: informacion,
+      disableClose: true,
+    });
+
+    Ventana.afterClosed().subscribe((res: boolean) => {
+      if (res) {
+        this.notificationService.Snack('Se actualizó al lead con éxito', '');
+        this.cargarInformacion();
+      }
+      if (res === false) {
+        this.notificationService.Snack('Ocurrió un error al actualizar al lead', '');
+      }
+    });
+  }
+
+
+  public eliminar(lead: Lead) {
+    const ventana = this.matDialog.open(DeleteWindowComponent, {
+      width: '600px',
+      data: { object: 'el lead', value: lead.name },
+      disableClose: true,
+    });
+
+    ventana.afterClosed().subscribe((response) => {
+      if (response === true) {
+        this.cargando$.next(true);
+        this.personService
+          .delete(lead.id, this.schema)
+          .pipe(
+            finalize(() => {
+              this.cargando$.next(false);
+            }),
+          )
+          .subscribe({
+            next: (resultado) => {
+              if (resultado > 0) {
+                this.notificationService.Snack('Se eliminó el lead satisfactoriamente', '');
+                this.cargarInformacion();
+              } else {
+                this.notificationService.Snack('Ocurrió un error al eliminar el lead', '');
+              }
+            },
+            error: () => {
+              this.notificationService.Snack('Ocurrió un error al eliminar el lead', '');
+            }
+          });
+      }
+    });
   }
 }
 

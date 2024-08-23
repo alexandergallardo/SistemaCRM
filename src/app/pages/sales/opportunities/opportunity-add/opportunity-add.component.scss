@@ -1,0 +1,73 @@
+::ng-deep .mat-horizontal-stepper-header {
+  pointer-events: none !important;
+}
+
+::ng-deep .cdk-overlay-pane {
+  max-height: 80vh;
+}
+
+.barra-estado {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 16px;
+}
+
+.etapa {
+  position: relative;
+  flex: 1;
+  margin-right: 10px;
+  text-align: center;
+  line-height: 30px;
+  color: #202020;
+}
+
+.etapa::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0px;
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-left: 15px solid #fff;
+  z-index: 0;
+}
+
+.etapa::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -15px;
+  width: 0;
+  height: 0;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-left: 15px solid #fff;
+  z-index: 1;
+}
+
+.etapa:first-child::before {
+  border-left-color: transparent;
+}
+
+.completada {
+  background-color: #43a047;
+  color: #fff;
+}
+
+.completada::before {
+  border-left-color: #ffffff;
+}
+
+.completada::after {
+  border-left-color: #43a047;
+}
+
+.etapa:last-child {
+  margin-right: 0; /* Elimina el margen derecho en la última etapa */
+}
+
+.etapa:last-child::after {
+  display: none; /* Elimina la flecha en la última etapa */
+}

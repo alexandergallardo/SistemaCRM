@@ -17,7 +17,7 @@ import { IRespuestaHttpEstandar } from '../../../../core/models/http.models';
 import { FormControl } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ContactsAddComponent } from '../contacts-add/contacts-add.component';
+import { ContactsAddComponent, InformacionVentanaContactos } from '../contacts-add/contacts-add.component';
 import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -87,9 +87,14 @@ export class ContactsListComponent implements OnInit {
   }
 
   public agregar() {
+    const informacion: InformacionVentanaContactos = {
+      tipo_vista: 'crear',
+    }
     const ventana = this.matDialog.open(ContactsAddComponent, {
       maxHeight: '90vh',
       width: '900px',
+      data: informacion,
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((response) => {
@@ -102,10 +107,33 @@ export class ContactsListComponent implements OnInit {
     });
   }
 
+  public editar(contact: Contact) {
+    const informacion: InformacionVentanaContactos = {
+      tipo_vista: 'editar',
+      contact,
+    }
+    const Ventana = this.matDialog.open(ContactsAddComponent, {
+      width: '900px',
+      data: informacion,
+      disableClose: true,
+    });
+
+    Ventana.afterClosed().subscribe((res: boolean) => {
+      if (res) {
+        this.notificationService.Snack('Se actualizó al contacto con éxito', '');
+        this.cargarInformacion();
+      }
+      if (res === false) {
+        this.notificationService.Snack('Ocurrió un error al actualizar al contacto', '');
+      }
+    });
+  }
+
   public eliminar(contact: Contact) {
     const ventana = this.matDialog.open(DeleteWindowComponent, {
       width: '600px',
       data: { object: 'el contacto', value: contact.name },
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((response) => {

@@ -1,1 +1,41 @@
-<p>sales-stage works!</p>
+<mat-card class="card">
+  <mat-card-content>
+    <div class="container">
+      <div class="lista-izquierda">
+        <mat-form-field appearance="outline" class="input-etapa">
+          <mat-label>Nombre de la etapa</mat-label>
+          <input matInput [formControl]="formControl" placeholder="Ej. Seguimiento">
+        </mat-form-field>
+        <button mat-button color="accent" (click)="agregarEtapaPersonalizada()">
+          <mat-icon>add</mat-icon> Agregar
+        </button>
+        <div class="example-list scrollable">
+          <div class="example-box" *ngFor="let opcion of opcionesPredeterminadas">
+            {{ opcion.name }}
+            <button mat-icon-button color="primary" (click)="agregarDesdeOpcionesPredeterminadas(opcion)">
+              <mat-icon>add_circle</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="lista-derecha">
+        <div class="example-list" cdkDropList [cdkDropListData]="listas" (cdkDropListDropped)="drop($event)">
+          <div class="example-box" *ngFor="let etapa of listas; let i = index" cdkDrag>
+            <span>{{ etapa.name }}</span>
+            <button mat-icon-button color="warn" (click)="eliminarEtapa(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+  <mat-card-actions>
+    <button
+      mat-raised-button
+      color="primary" 
+      [disabled]="(cargando$ | async)"
+      (click)="guardarEtapas(schema)">Guardar Etapas
+    </button>
+  </mat-card-actions>
+</mat-card>

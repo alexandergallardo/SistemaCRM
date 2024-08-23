@@ -20,7 +20,7 @@ import { MatInputModule } from '@angular/material/input';
 import { SectorsService } from '../../../../core/services/sectors.service';
 import { Sector } from '../../../../core/models/sector.models';
 import { MatSelectModule } from '@angular/material/select';
-import { AccountsAddComponent } from '../accounts-add/accounts-add.component';
+import { AccountsAddComponent, InformacionVentanaCuentas } from '../accounts-add/accounts-add.component';
 import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -99,9 +99,14 @@ export class AccountsListComponent implements OnInit {
   }
 
   public agregar() {
+    const informacion: InformacionVentanaCuentas = {
+      tipo_vista: 'crear',
+    }
     const ventana = this.matDialog.open(AccountsAddComponent, {
       maxHeight: '90vh',
       width: '900px',
+      data:informacion,
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((response) => {
@@ -114,10 +119,34 @@ export class AccountsListComponent implements OnInit {
     });
   }
 
+  public editar(account: Account) {
+    const informacion: InformacionVentanaCuentas = {
+      tipo_vista: 'editar',
+      account,
+    }
+    const Ventana = this.matDialog.open(AccountsAddComponent, {
+      width: '900px',
+      data: informacion,
+      disableClose: true,
+    });
+
+    Ventana.afterClosed().subscribe((res: boolean) => {
+      if (res) {
+        this.notificationService.Snack('Se actualizó al contacto con éxito', '');
+        this.cargarInformacion();
+      }
+      if (res === false) {
+        this.notificationService.Snack('Ocurrió un error al actualizar al contacto', '');
+      }
+    });
+  }
+
+
   public eliminar(account: Account) {
     const ventana = this.matDialog.open(DeleteWindowComponent, {
       width: '600px',
       data: { object: 'la cuenta', value: account.companyName },
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((response) => {

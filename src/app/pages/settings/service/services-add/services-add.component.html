@@ -1,6 +1,6 @@
 <mat-card class="card-emergente">
   <mat-toolbar color="primary">
-    Nuevo servicio
+    {{ this.data.tipo_vista === 'editar' ? 'Actualizar servicio' : 'Nuevo servicio' }}
     <span class="espacio"> </span>
     <button mat-icon-button type="button" (click)="cerrarVentana()">
       <mat-icon> close </mat-icon>

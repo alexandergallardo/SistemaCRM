@@ -1,6 +1,6 @@
 <mat-card class="card-emergente">
   <mat-toolbar color="primary">
-    Nuevo lead
+    {{ this.data.tipo_vista === 'editar' ? 'Actualizar lead' : 'Nuevo lead' }}
     <span class="espacio"> </span>
     <button mat-icon-button type="button" (click)="cerrarVentana()">
       <mat-icon> close </mat-icon>

@@ -17,7 +17,7 @@ import { FormControl } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { SectorsAddComponent } from '../sectors-add/sectors-add.component';
+import { InformacionVentanaSectores, SectorsAddComponent } from '../sectors-add/sectors-add.component';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { DeleteWindowComponent } from '../../../../shared/components/delete-window/delete-window.component';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -87,9 +87,15 @@ export class SectorsListComponent implements OnInit, AfterViewInit {
   }
 
   public agregar() {
+    const informacion: InformacionVentanaSectores = {
+      tipo_vista: 'crear',
+    }
+
     const ventana = this.matDialog.open(SectorsAddComponent, {
       maxHeight: '90vh',
       width: '600px',
+      data: informacion,
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((response) => {
@@ -102,10 +108,33 @@ export class SectorsListComponent implements OnInit, AfterViewInit {
     });
   }
 
+  public editar(sector: Sector) {
+    const informacion: InformacionVentanaSectores = {
+      tipo_vista: 'editar',
+      sector,
+    }
+    const Ventana = this.matDialog.open(SectorsAddComponent, {
+      width: '900px',
+      data: informacion,
+      disableClose: true,
+    });
+
+    Ventana.afterClosed().subscribe((res: boolean) => {
+      if (res) {
+        this.notificationService.Snack('Se actualizó al sector con éxito', '');
+        this.cargarInformacion();
+      }
+      if (res === false) {
+        this.notificationService.Snack('Ocurrió un error al actualizar al sector', '');
+      }
+    });
+  }
+
   public eliminar(sector: Sector) {
     const ventana = this.matDialog.open(DeleteWindowComponent, {
       width: '600px',
       data: { object: 'el sector', value: sector.name },
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((response) => {

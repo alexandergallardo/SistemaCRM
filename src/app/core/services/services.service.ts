@@ -97,13 +97,11 @@ export class ServicesService {
 
   public update(
     serviceId: number,
-    code: string,
     nombre: string,
     measurementUnit: string,
     schema: string,
   ): Observable<number> {
     const body = {
-      code,
       name: nombre,
       measurementUnit,
       schema

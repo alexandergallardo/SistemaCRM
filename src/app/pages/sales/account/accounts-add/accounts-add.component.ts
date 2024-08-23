@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -21,6 +21,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { User } from '../../../../core/models/users.models';
 import { EstadoGlobal, obtenerUsuario } from '../../../../core/reducers/estado-global.reducer';
 import { Store } from '@ngrx/store';
+import { Account } from '../../../../core/models/account.models';
 
 @Component({
   selector: 'app-accounts-add',
@@ -36,6 +37,7 @@ export class AccountsAddComponent implements OnInit{
   private schema: string = '';
 
   constructor(
+    @Inject(MAT_DIALOG_DATA) public data: InformacionVentanaCuentas,
     private readonly accountsService: AccountsService,
     private readonly sectorsService: SectorsService,
     private readonly matDialogRef: MatDialogRef<AccountsAddComponent>,
@@ -47,6 +49,9 @@ export class AccountsAddComponent implements OnInit{
     this.inicializarSchema();
     this.listarSectores();
     this.obtenerUsuario();
+    if (this.data.tipo_vista === 'editar') {
+      this.asignarInformacion(this.data.account!);
+    }
   }
 
   private inicializarSchema() {
@@ -69,8 +74,8 @@ export class AccountsAddComponent implements OnInit{
       document: new FormControl('', [Validators.required]),
       companyName: new FormControl('', [Validators.required]),
       businessGroup: new FormControl('', []),
-      sectorId: new FormControl(null, [Validators.required]),
-      numberOfEmployees: new FormControl(null, []),
+      sectorId: new FormControl<number | null>(null, [Validators.required]),
+      numberOfEmployees: new FormControl<number | null>(null, []),
       tradeName: new FormControl('', []),
       legalAddress: new FormControl('', []),
       description: new FormControl('', []),
@@ -82,7 +87,22 @@ export class AccountsAddComponent implements OnInit{
     });
   }
 
-  public guardar() {
+  private asignarInformacion(informacion: Account) {
+    this.accountForm.get('document')?.setValue(informacion.document);
+    this.accountForm.get('companyName')?.setValue(informacion.companyName);
+    this.accountForm.get('businessGroup')?.setValue(informacion.businessGroup);
+    this.accountForm.get('sectorId')?.setValue(informacion.sectorId);
+    this.accountForm.get('numberOfEmployees')?.setValue(informacion.numberOfEmployees);
+    this.accountForm.get('tradeName')?.setValue(informacion.tradeName);
+    this.accountForm.get('legalAddress')?.setValue(informacion.legalAddress);
+    this.accountForm.get('description')?.setValue(informacion.description);
+    this.accountForm.get('website')?.setValue(informacion.website);
+    this.accountForm.get('linkedin')?.setValue(informacion.linkedin);
+    this.accountForm.get('facebook')?.setValue(informacion.facebook);
+    this.accountForm.get('instagram')?.setValue(informacion.instagram);
+  }
+
+  private crear() {
     if (this.accountForm.valid) {
     this.cargando$.next(true);
 
@@ -120,6 +140,53 @@ export class AccountsAddComponent implements OnInit{
     }
   }
 
+  private actualizar() {
+    if (this.accountForm.valid) {
+    this.cargando$.next(true);
+
+      this.accountsService
+        .update(
+          this.data.account!.id,
+          this.accountForm.value.document!,
+          this.accountForm.value.companyName!,
+          this.accountForm.value.businessGroup!,
+          this.accountForm.value.sectorId!,
+          this.accountForm.value.numberOfEmployees!,
+          this.accountForm.value.tradeName!,
+          this.accountForm.value.legalAddress!,
+          this.accountForm.value.description!,
+          this.accountForm.value.salesAgentId!,
+          this.accountForm.value.website!,
+          this.accountForm.value.facebook!,
+          this.accountForm.value.instagram!,
+          this.accountForm.value.linkedin!,
+          this.schema
+        )
+        .pipe(
+          finalize(() => {
+            this.cargando$.next(false);
+          })
+        )
+        .subscribe({
+          next: (response) => {
+            this.matDialogRef.close(true);
+          },
+          error: (error) => {
+            console.error('Error al guardar cuenta:', error);
+            this.matDialogRef.close(false);
+          }
+        });
+    }
+  }
+
+
+  public guardar() {
+    if (this.data.tipo_vista === 'editar') {
+      this.actualizar();
+    } else {
+      this.crear();
+    }
+  }
         
   private listarSectores() {
     this.sectorsService.getSectors('',1,100, this.schema).subscribe((resultado) => {
@@ -132,3 +199,7 @@ export class AccountsAddComponent implements OnInit{
   }
 }
 
+export type InformacionVentanaCuentas = {
+  tipo_vista: 'crear' | 'editar';
+  account?: Account;
+};

@@ -20,6 +20,7 @@ export type Contact = {
   position: string;
   email: string;
   mobile: string;
+  accountId: number;
   accountName: string;
   salesAgentName: string;
   createdAt: Date;
@@ -38,6 +39,7 @@ export type Lead = {
   position: string;
   email: string;
   mobile: string;
+  accountId: number;
   accountName: string;
   salesAgentName: string;
   createdAt: Date;

@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -14,6 +14,7 @@ import { SectorsService } from '../../../../core/services/sectors.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { AuthService } from '../../../../core/services/auth.service';
+import { Sector } from '../../../../core/models/sector.models';
 
 @Component({
   selector: 'app-sectors-add',
@@ -28,6 +29,7 @@ export class SectorsAddComponent implements OnInit{
   private schema: string = '';
 
   constructor(
+    @Inject(MAT_DIALOG_DATA) public data: InformacionVentanaSectores,
     private readonly sectorsService: SectorsService,
     private readonly authService: AuthService,
     private readonly matDialogRef: MatDialogRef<SectorsAddComponent>,
@@ -35,6 +37,9 @@ export class SectorsAddComponent implements OnInit{
 
   ngOnInit(): void {
     this.inicializarSchema();
+    if (this.data.tipo_vista === 'editar') {
+      this.asignarInformacion(this.data.sector!);
+    }
   }
 
   private crearFormulario() {
@@ -43,12 +48,15 @@ export class SectorsAddComponent implements OnInit{
     });
   }
 
+  private asignarInformacion(informacion: Sector) {
+    this.sectorForm.get('name')?.setValue(informacion.name);
+  }
+
   private inicializarSchema() {
     this.schema = this.authService.getSchema() || '';
   }
 
-
-  public guardar() {
+  private crear( ){
     if (this.sectorForm.valid) {
       this.cargando$.next(true);
   
@@ -67,9 +75,49 @@ export class SectorsAddComponent implements OnInit{
             console.error('Error al guardar sector:', error);
             this.matDialogRef.close(false);
           }
-        });}}
+        }
+      );
+    }
+  }
+
+  private actualizar() {
+    if (this.sectorForm.valid) {
+      this.cargando$.next(true);
+      this.sectorsService
+        .update(this.data.sector!.id, this.sectorForm.value.name!, this.schema)
+        .pipe(
+          finalize(() => {
+            this.cargando$.next(false);
+          })
+        )
+        .subscribe({
+          next: (response) => {
+            this.matDialogRef.close(true);
+          },
+          error: (error) => {
+            console.error('Error al guardar sector:', error);
+            this.matDialogRef.close(false);
+          }
+        }
+      );
+    }
+  }
+
+  public guardar() {
+    if (this.data.tipo_vista === 'editar') {
+      this.actualizar();
+    } else {
+      this.crear();
+    }
+  }
 
   public cerrarVentana() {
     this.matDialogRef.close();
   }
 }
+
+export type InformacionVentanaSectores = {
+  tipo_vista: 'crear' | 'editar';
+  sector?: Sector;
+};
+

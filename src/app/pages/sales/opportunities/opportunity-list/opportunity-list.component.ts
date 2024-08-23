@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { OpportunityListCardsComponent } from "./opportunity-list-cards/opportunity-list-cards.component";
 import { OpportunityListTableComponent } from "./opportunity-list-table/opportunity-list-table.component";
+import { SalesStageComponent } from "./../../sales-stage/sales-stage.component";
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { OportunitiesService } from '../../../../core/services/opportunities.service';
@@ -14,17 +15,20 @@ import { Opportunity } from '../../../../core/models/opportunity.models';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SalesStage } from '../../../../core/models/sales_stage.models';
 import { SalesStageService } from '../../../../core/services/sales-stage.service';
-import { OpportunityAddComponent } from '../opportunity-add/opportunity-add.component';
+import { InformacionVentanaOportunidad, OpportunityAddComponent } from '../opportunity-add/opportunity-add.component';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../../core/services/auth.service';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { FormBuilder } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
     selector: 'app-opportunities',
     standalone: true,
     templateUrl: './opportunity-list.component.html',
     styleUrl: './opportunity-list.component.scss',
-    imports: [MatProgressSpinnerModule, MatToolbarModule, MatIconModule, MatCardModule, CommonModule, OpportunityListCardsComponent, OpportunityListTableComponent, MatMenuModule, MatButtonModule, MatPaginatorModule]
+    imports: [MatProgressSpinnerModule, MatFormFieldModule, MatToolbarModule, MatIconModule, MatCardModule, CommonModule, OpportunityListCardsComponent, OpportunityListTableComponent, MatMenuModule, MatButtonModule, MatPaginatorModule, DragDropModule, SalesStageComponent]
 })
 export class OpportunityListComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -34,6 +38,7 @@ export class OpportunityListComponent implements OnInit, AfterViewInit {
   public totalRegistros!: number;
   public listas: SalesStage[] = [];
   public schema: string = '';
+  public configurandoEtapas = false;
 
   constructor(
     private readonly oportunitiesService: OportunitiesService,
@@ -41,11 +46,13 @@ export class OpportunityListComponent implements OnInit, AfterViewInit {
     private readonly salesStageService: SalesStageService,
     private readonly notificationService: NotificationService,
     private readonly authService: AuthService,
+    private readonly fb: FormBuilder,
   ) {}
 
   ngOnInit(): void {
     this.inicializarSchema();
-    this.obtenerEtapasDeVenta();
+    //this.obtenerEtapasDeVenta();
+    this.verificarEtapasDeVenta();
     this.listarOportunidades();
   }
 
@@ -79,6 +86,26 @@ export class OpportunityListComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private verificarEtapasDeVenta() {
+    this.cargando$.next(true);
+
+    this.salesStageService.getSalesStages(1, 20, this.schema).subscribe({
+      next: (respuesta) => {
+        this.listas = respuesta.data.sort((a, b) => a.position - b.position);
+        this.cargando$.next(false);
+        this.configurandoEtapas = this.listas.length === 0;
+      },
+      error: (error) => {
+        console.error('Error al verificar etapas de venta:', error);
+        this.cargando$.next(false);
+      }
+    });
+  }
+
+  public onEtapasGuardadas() {
+    this.verificarEtapasDeVenta();
+  }
+
   private listarOportunidades() {
     this.cargando$.next(true);
 
@@ -105,8 +132,13 @@ export class OpportunityListComponent implements OnInit, AfterViewInit {
   }
 
   public agregar() {
+    const informacion: InformacionVentanaOportunidad = {
+      tipo_vista: 'ver',
+    }
     const ventana = this.matDialog.open(OpportunityAddComponent, {
       width: '1100px',
+      data: informacion,
+      disableClose: true,
     });
 
     ventana.afterClosed().subscribe((respuesta) => {

@@ -1,0 +1,30 @@
+.card {
+  margin: 20px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.radio-group {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.section-title {
+  margin-top: 20px;
+}
+
+mat-grid-tile {
+  align-items: center;
+  display: flex;
+}
+
+::ng-deep .cdk-overlay-pane {
+  max-height: 90vh;
+}
+
+::ng-deep .mdc-dialog__surface {
+  display: block;
+}

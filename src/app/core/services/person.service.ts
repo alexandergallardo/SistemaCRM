@@ -163,7 +163,7 @@ export class PersonService {
       customAttributes,
       schema,
     };
-
+    console.log(body);
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
     return this.httpClient.put<IRespuestaHttpEstandar<number>>(`${environment.apiBaseUrl}/sales/person/${id}`, body, { headers }).pipe(
